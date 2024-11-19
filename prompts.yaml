@@ -1,0 +1,196 @@
+prompts:
+  executive_bullet:
+    name: "Executive Bullet Points"
+    description: "Concise, bullet points for quick executive review"
+    template: |
+      You are creating an executive-friendly bullet point summary of marketing metrics. Format your response using bullet points with emojis and clear section breaks. Each bullet point should be on its own line with a blank line between sections.
+
+      Current Metrics:
+      {current_metrics}
+
+      Trend Data:
+      {trend_data}
+
+      Format each section like this, with blank lines between bullets:
+
+      ## 📈 Key Performance Highlights
+
+      • [First point with metric]
+
+      • [Second point with metric]
+
+      • [Third point with metric]
+
+      ## 🔍 Notable Trends
+
+      • [First trend with numbers]
+
+      • [Second trend with numbers]
+
+      ## ⚠️ Risk Areas
+
+      • [First risk with metric]
+
+      • [Second risk with metric]
+
+      ## 🎯 Recommendations
+
+      • [First recommendation]
+
+      • [Second recommendation]
+
+      Make every bullet point data-backed and include the specific metrics that support your observation. Ensure each bullet point starts with "• " and is separated by a blank line.
+
+  detailed_report:
+    name: "Detailed Business Report"
+    description: "Formal business report with detailed analysis and tables"
+    template: |
+      You are preparing a formal business analysis report. Use markdown formatting to create a structured, professional document.
+
+      Current Metrics:
+      {current_metrics}
+
+      Trend Data:
+      {trend_data}
+
+      Format your response as follows:
+
+      # Quarterly Business Performance Analysis
+
+      ## Executive Summary
+      [2-3 sentences highlighting key findings]
+
+      ## Performance Analysis
+      ### Revenue Metrics
+      [Analyze revenue trends, include specific numbers in a comparative table format using markdown]
+
+      ### Customer Metrics
+      [Analyze customer behavior metrics, include specific numbers]
+
+      ### Product Category Performance
+      [Break down performance by product category]
+
+      ## Risk Assessment
+      [Identify key risks with supporting data]
+
+      ## Strategic Recommendations
+      1. [First recommendation with supporting metrics]
+      2. [Second recommendation with supporting metrics]
+      3. [Third recommendation with supporting metrics]
+
+  financial_dashboard:
+    name: "Financial KPI Focus"
+    description: "Numbers-first analysis emphasizing financial metrics"
+    template: |
+      You are a CFO creating a financial performance summary. Focus heavily on numbers and financial KPIs.
+
+      Current Metrics:
+      {current_metrics}
+
+      Trend Data:
+      {trend_data}
+
+      Format your response as follows:
+
+      # Financial Performance Summary
+
+      ## 💰 Revenue Metrics
+      ```
+      Revenue Growth: [X]%
+      Revenue per Customer: $[X]
+      YoY Change: [X]%
+      ```
+
+      ## 👥 Customer Economics
+      ```
+      Customer Acquisition: [X]
+      Retention Rate: [X]%
+      Customer Lifetime Value: $[X]
+      ```
+
+      ## 📊 Segment Performance
+      [Present key segment metrics in a markdown table]
+
+      ## 💡 Financial Recommendations
+      Each recommendation must include:
+      - Expected financial impact
+      - Implementation cost consideration
+      - ROI timeline
+
+  customer_journey:
+    name: "Customer Journey Analysis"
+    description: "Analysis focused on customer experience with journey mapping"
+    template: |
+      You are a customer experience analyst. Create a journey-focused analysis using customer behavior data.
+
+      Current Metrics:
+      {current_metrics}
+
+      Trend Data:
+      {trend_data}
+
+      Structure your response as follows:
+
+      # Customer Journey Analysis
+
+      ## 🆕 Acquisition Phase
+      > **Metrics to Watch:**
+      - New Customer Growth: [X]%
+      - Initial Purchase Behavior: [Details]
+
+      ## 💫 Engagement Phase
+      > **Metrics to Watch:**
+      - Purchase Frequency: [X]
+      - Average Order Value: $[X]
+
+      ## 🤝 Retention Phase
+      > **Metrics to Watch:**
+      - Retention Rate: [X]%
+      - Repeat Purchase Rate: [X]%
+
+      ## ⭐ Experience Enhancement Opportunities
+      1. **[Opportunity Area]**
+         - Current Metric: [X]
+         - Target Metric: [X]
+         - Impact Potential: [Description]
+
+  competitive_insight:
+    name: "Market Competition Analysis"
+    description: "Analysis through competitive positioning lens with visual markers"
+    template: |
+      Analyze the data from a competitive strategy perspective. Use visual markers and clear sections to highlight competitive positions.
+
+      Current Metrics:
+      {current_metrics}
+
+      Trend Data:
+      {trend_data}
+
+      Format your response using this structure:
+
+      # Competitive Position Analysis
+
+      ## 🏆 Market Leadership Areas
+      [List metrics where we show strong performance]
+      - **Metric**: [X]
+      - **Market Position**: [Assessment]
+      - **Competitive Advantage**: [Description]
+
+      ## 🎯 Opportunity Zones
+      [List metrics showing growth potential]
+      - **Current Performance**: [X]
+      - **Market Benchmark**: [Y]
+      - **Gap Analysis**: [Description]
+
+      ## ⚠️ Competitive Threats
+      [List metrics showing vulnerability]
+      - **Threat Area**: [Description]
+      - **Supporting Metrics**: [X]
+      - **Risk Level**: [Assessment]
+
+      ## 🚀 Strategic Moves
+      Each recommendation should include:
+      - **Action Item**
+      - **Expected Impact** (with specific metrics)
+      - **Implementation Priority**
+      - **Success Metrics**
