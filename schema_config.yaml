@@ -1,0 +1,114 @@
+business_context:
+  description: "E-commerce platform selling electronics and office supplies"
+  key_concepts:
+    - "Customer lifetime value tracked through order history"
+    - "Seasonal sales patterns (Nov-Dec peak)"
+    - "Geographic distribution affects product preferences"
+
+database_config:
+  type: "sqlite"
+  date_functions:
+    year: "strftime('%Y', {})"
+    month: "strftime('%Y-%m', {})"
+    date: "strftime('%Y-%m-%d', {})"
+  date_formats:
+    literal: "YYYY-MM-DD"
+    year: "YYYY"
+    month: "YYYY-MM"
+  example_queries:
+    - description: "Monthly revenue"
+      query: >
+        SELECT 
+          strftime('%Y-%m', order_date) AS month,
+          SUM(total_price) AS revenue
+        FROM orders
+        GROUP BY month
+        ORDER BY month;
+    - description: "Average order value by payment method"
+      query: >
+        SELECT 
+          payment_method,
+          AVG(total_price) AS avg_order_value
+        FROM orders
+        GROUP BY payment_method
+        ORDER BY avg_order_value DESC;
+    - description: "State-wise average order value"
+      query: >
+        SELECT 
+          c.state,
+          AVG(o.total_price) AS avg_order_value
+        FROM customers c
+        JOIN orders o ON c.id = o.customer_id
+        GROUP BY c.state
+        ORDER BY avg_order_value DESC;
+
+tables:
+  customers:
+    description: "Customer profile and demographic information"
+    fields:
+      id:
+        type: "INTEGER"
+        description: "Unique customer identifier"
+        is_key: true
+      name:
+        type: "TEXT"
+        description: "Customer's full name"
+      email:
+        type: "TEXT"
+        description: "Primary contact method for communications"
+      city:
+        type: "TEXT"
+        description: "Customer's city of residence"
+      state:
+        type: "TEXT"
+        description: "Customer's state of residence"
+    relationships:
+      - table: "orders"
+        type: "one_to_many"
+        join_fields: ["id", "customer_id"]
+
+  orders:
+    description: "Transaction records including products and payment details"
+    fields:
+      id:
+        type: "INTEGER"
+        description: "Unique order identifier"
+        is_key: true
+      customer_id:
+        type: "INTEGER"
+        description: "Links to customer profile"
+        foreign_key: "customers.id"
+      product_name:
+        type: "TEXT"
+        description: "Name of purchased product"
+      category:
+        type: "TEXT"
+        description: "Product category (Electronics, Office Supplies, Accessories)"
+      quantity:
+        type: "INTEGER"
+        description: "Number of units purchased"
+      price:
+        type: "REAL"
+        description: "Unit price of product"
+      total_price:
+        type: "REAL"
+        description: "Final order amount (quantity * price)"
+      payment_method:
+        type: "TEXT"
+        description: "Payment method used (Credit Card, PayPal, Bank Transfer)"
+      order_date:
+        type: "TIMESTAMP"
+        description: "When order was placed"
+
+query_guidelines:
+  tips:
+    - "Use total_price for revenue calculations instead of price * quantity"
+    - "Join customers and orders tables using customer_id for customer analysis"
+    - "Consider seasonal patterns when analyzing time-series data"
+    - "Use proper date formatting for order_date comparisons"
+    
+  validation:
+    - "Remove any SQL formatting characters before execution"
+    - "Ensure column references are fully qualified (table.column)"
+    - "Include proper type casting for numerical operations"
+    - "Use COALESCE for handling NULL values in calculations"

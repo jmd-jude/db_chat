@@ -8,6 +8,7 @@ from src.langchain_components.qa_chain import generate_dynamic_query, execute_dy
 import os
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
+import traceback
 
 # Load environment variables
 load_dotenv()
@@ -57,7 +58,7 @@ def generate_analysis(data, selected_prompt):
    return response.content
 
 def main():
-  st.title("E-commerce Analytics Dashboard")
+  st.title("Analytics Dashboard")
   
   tab1, tab2 = st.tabs(["Standard Metrics", "Custom Query"])
   
@@ -226,15 +227,20 @@ def main():
            with st.spinner("Generating and executing query..."):
                try:
                    sql_query = generate_dynamic_query(user_question)
-                   with st.expander("View Generated SQL", expanded=False):
-                       st.code(sql_query, language="sql")
-                   results = execute_dynamic_query(sql_query)
+                   st.code(sql_query, language="sql")  # Always show the query
+                   
+                   results = execute_dynamic_query(sql_query, user_question)
                    if isinstance(results, pd.DataFrame):
                        st.dataframe(results)
                    else:
                        st.error(results)
+                       # Show detailed error for debugging
+                       st.error("Full error details:")
+                       st.code(traceback.format_exc())
                except Exception as e:
                    st.error(f"Error: {str(e)}")
+                   st.error("Full error details:")
+                   st.code(traceback.format_exc())
 
 if __name__ == "__main__":
    main()
