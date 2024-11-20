@@ -7,6 +7,23 @@ import yaml
 import re
 from collections import defaultdict
 from datetime import datetime
+import logging
+import os
+import json
+
+# Set up logging
+log_dir = "logs"
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(message)s',
+    handlers=[
+        logging.FileHandler(os.path.join(log_dir, f'chat_history_{datetime.now().strftime("%Y%m%d")}.log')),
+        logging.StreamHandler()
+    ]
+)
 
 class QueryMemoryManager:
     def __init__(self, window_size=5):
@@ -18,11 +35,16 @@ class QueryMemoryManager:
     
     def save_interaction(self, thread_id: str, question: str, query: str, result):
         interaction = {
+            'timestamp': datetime.now().isoformat(),
+            'thread_id': thread_id,
             'question': question,
             'query': query,
             'result': str(result)
         }
         self.history[thread_id].append(interaction)
+        
+        # Log the interaction
+        logging.info(json.dumps(interaction, indent=2))
 
 def load_schema_config():
     with open('schema_config.yaml', 'r') as file:

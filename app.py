@@ -63,6 +63,7 @@ def main():
   tab1, tab2 = st.tabs(["Standard Metrics", "Custom Query"])
   
   with tab1:
+   
    # Load prompts
    prompts = load_prompts()
    
@@ -189,7 +190,7 @@ def main():
        with st.spinner("Generating analysis..."):
            analysis = generate_analysis(data, selected_prompt)
            st.markdown(analysis)
-   
+
   with tab2:
        st.header("Ask Questions About Your Data")
        
