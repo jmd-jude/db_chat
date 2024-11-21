@@ -10,6 +10,9 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 import traceback
 
+# Demo mode configuration
+DEMO_MODE = True  # Set to False to show all features
+
 # Load environment variables
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
@@ -58,143 +61,147 @@ def generate_analysis(data, selected_prompt):
    return response.content
 
 def main():
-  st.title("Analytics Dashboard")
+  st.title("Talk with Your Data")
   
-  tab1, tab2 = st.tabs(["Standard Metrics", "Custom Query"])
+  if DEMO_MODE:
+      tab2 = st.tabs(["Custom Query Experience"])[0]
+  else:
+      tab1, tab2 = st.tabs(["Standard Metrics", "Custom Query Experience"])
   
-  with tab1:
-   
-   # Load prompts
-   prompts = load_prompts()
-   
-   # Create prompt selection section
-   st.sidebar.header("Analysis Configuration")
-   
-   prompt_options = {f"{v['name']} - {v['description']}": v['template'] 
-                   for v in prompts.values()}
-   selected_name = st.sidebar.selectbox(
-       "Select analysis type:",
-       list(prompt_options.keys())
-   )
-   selected_prompt = prompt_options[selected_name]
+  if not DEMO_MODE:
+      with tab1:
+         
+         # Load prompts
+         prompts = load_prompts()
+         
+         # Create prompt selection section
+         st.sidebar.header("Analysis Configuration")
+         
+         prompt_options = {f"{v['name']} - {v['description']}": v['template'] 
+                         for v in prompts.values()}
+         selected_name = st.sidebar.selectbox(
+             "Select analysis type:",
+             list(prompt_options.keys())
+         )
+         selected_prompt = prompt_options[selected_name]
 
-   # Custom CSS to widen layout and style containers
-   st.markdown("""
-       <style>
-       .main .block-container {
-           max-width: 1200px;
-           padding-top: 2rem;
-           padding-right: 2rem;
-           padding-left: 2rem;
-           padding-bottom: 2rem;
-       }
-       .stExpander {
-           min-height: 400px;
-       }
-       .streamlit-expanderHeader {
-           font-size: 1.2rem;
-           font-weight: 600;
-       }
-       div[data-testid="column"] {
-           width: calc(50% - 1rem);
-           padding: 0 1rem;
-       }
-       </style>
-       """, unsafe_allow_html=True)
+         # Custom CSS to widen layout and style containers
+         st.markdown("""
+             <style>
+             .main .block-container {
+                 max-width: 1200px;
+                 padding-top: 2rem;
+                 padding-right: 2rem;
+                 padding-left: 2rem;
+                 padding-bottom: 2rem;
+             }
+             .stExpander {
+                 min-height: 400px;
+             }
+             .streamlit-expanderHeader {
+                 font-size: 1.2rem;
+                 font-weight: 600;
+             }
+             div[data-testid="column"] {
+                 width: calc(50% - 1rem);
+                 padding: 0 1rem;
+             }
+             </style>
+             """, unsafe_allow_html=True)
 
-   # Load data immediately
-   data = load_data()
-   
-   # Header and Analysis button side by side
-   header_col, button_col = st.columns([4,1])
-   with header_col:
-       st.header("Current Performance")
-   with button_col:
-       st.write("")  # Spacing
-       generate_button = st.button("Generate Analysis", key="generate_analysis")
-   
-   # Top metrics row
-   col1, col2, col3 = st.columns(3)
-   with col1:
-       metrics = data['CUSTOMER_METRICS']
-       st.metric("Total Customers", 
-                format_number(metrics['total_customers'].iloc[0]))
-   with col2:
-       metrics = data['SALES_OVERVIEW']
-       st.metric("Total Revenue", 
-                format_currency(metrics['total_revenue'].sum()))
-   with col3:
-       st.metric("Avg Order Value",
-                format_currency(metrics['avg_order_value'].mean()))
+         # Load data immediately
+         data = load_data()
+         
+         # Header and Analysis button side by side
+         header_col, button_col = st.columns([4,1])
+         with header_col:
+             st.header("Current Performance")
+         with button_col:
+             st.write("")  # Spacing
+             generate_button = st.button("Generate Analysis", key="generate_analysis")
+         
+         # Top metrics row
+         col1, col2, col3 = st.columns(3)
+         with col1:
+             metrics = data['CUSTOMER_METRICS']
+             st.metric("Total Customers", 
+                      format_number(metrics['total_customers'].iloc[0]))
+         with col2:
+             metrics = data['SALES_OVERVIEW']
+             st.metric("Total Revenue", 
+                      format_currency(metrics['total_revenue'].sum()))
+         with col3:
+             st.metric("Avg Order Value",
+                      format_currency(metrics['avg_order_value'].mean()))
 
-   # Main content in two columns
-   container = st.container()
-   with container:
-       left_col, right_col = st.columns(2)
-       
-       with left_col:
-           with st.expander("Sales Performance", expanded=True):
-               st.subheader("Category Performance")
-               st.dataframe(
-                   data['CATEGORY_PERFORMANCE'],
-                   height=300,
-                   use_container_width=True
-               )
-               st.subheader("Payment Methods")
-               st.dataframe(
-                   data['PAYMENT_METHODS'],
-                   height=300,
-                   use_container_width=True
-               )
-           
-           with st.expander("Customer Insights", expanded=True):
-               st.subheader("Customer Segments")
-               st.dataframe(
-                   data['CUSTOMER_SEGMENTS'],
-                   height=300,
-                   use_container_width=True
-               )
-               st.subheader("Top States")
-               st.dataframe(
-                   data['GEOGRAPHIC_DISTRIBUTION'].head(),
-                   height=300,
-                   use_container_width=True
-               )
-               
-       with right_col:
-           with st.expander("Product Analysis", expanded=True):
-               st.subheader("Top Products")
-               st.dataframe(
-                   data['TOP_PRODUCTS'],
-                   height=300,
-                   use_container_width=True
-               )
-           
-           with st.expander("Trend Analysis", expanded=True):
-               st.subheader("Sales Trend")
-               st.dataframe(
-                   data['SALES_TREND'],
-                   height=300,
-                   use_container_width=True
-               )
-               st.subheader("Customer Growth")
-               st.dataframe(
-                   data['CUSTOMER_GROWTH'],
-                   height=300,
-                   use_container_width=True
-               )
+         # Main content in two columns
+         container = st.container()
+         with container:
+             left_col, right_col = st.columns(2)
+             
+             with left_col:
+                 with st.expander("Sales Performance", expanded=True):
+                     st.subheader("Category Performance")
+                     st.dataframe(
+                         data['CATEGORY_PERFORMANCE'],
+                         height=300,
+                         use_container_width=True
+                     )
+                     st.subheader("Payment Methods")
+                     st.dataframe(
+                         data['PAYMENT_METHODS'],
+                         height=300,
+                         use_container_width=True
+                     )
+                 
+                 with st.expander("Customer Insights", expanded=True):
+                     st.subheader("Customer Segments")
+                     st.dataframe(
+                         data['CUSTOMER_SEGMENTS'],
+                         height=300,
+                         use_container_width=True
+                     )
+                     st.subheader("Top States")
+                     st.dataframe(
+                         data['GEOGRAPHIC_DISTRIBUTION'].head(),
+                         height=300,
+                         use_container_width=True
+                     )
+                     
+             with right_col:
+                 with st.expander("Product Analysis", expanded=True):
+                     st.subheader("Top Products")
+                     st.dataframe(
+                         data['TOP_PRODUCTS'],
+                         height=300,
+                         use_container_width=True
+                     )
+                 
+                 with st.expander("Trend Analysis", expanded=True):
+                     st.subheader("Sales Trend")
+                     st.dataframe(
+                         data['SALES_TREND'],
+                         height=300,
+                         use_container_width=True
+                     )
+                     st.subheader("Customer Growth")
+                     st.dataframe(
+                         data['CUSTOMER_GROWTH'],
+                         height=300,
+                         use_container_width=True
+                     )
 
-   # AI Analysis section
-   if generate_button:
-       st.divider()
-       with st.spinner("Generating analysis..."):
-           analysis = generate_analysis(data, selected_prompt)
-           st.markdown(analysis)
+         # AI Analysis section
+         if generate_button:
+             st.divider()
+             with st.spinner("Generating analysis..."):
+                 analysis = generate_analysis(data, selected_prompt)
+                 st.markdown(analysis)
 
   with tab2:
        st.header("Ask Questions About Your Data")
        
-       with st.expander("Example Questions", expanded=True):
+       with st.expander("Example Questions", expanded=False):
            st.markdown("""
            **Simple Questions:**
             - What are our total sales by product category?
