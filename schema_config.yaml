@@ -77,22 +77,22 @@ tables:
         description: product_name field
       category:
         type: TEXT
-        description: category field
+        description: product category
       quantity:
         type: INTEGER
-        description: quantity field
+        description: number of items in the order
       price:
         type: REAL
-        description: price field
+        description: item price field
       total_price:
         type: REAL
-        description: total_price field
+        description: total amount of the order
       payment_method:
         type: TEXT
         description: payment_method field
       order_date:
         type: TIMESTAMP
-        description: order_date field
+        description: is both the order and shipped date
       delivery_date:
         type: TIMESTAMP
         description: delivery_date field
