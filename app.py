@@ -197,19 +197,19 @@ def main():
        with st.expander("Example Questions", expanded=True):
            st.markdown("""
            **Simple Questions:**
-           - Show me total revenue by product category
-           - What is the average order value by payment method?
-           - How many customers do we have in each state?
-           
-           **Intermediate Questions:**
-           - Which states have the highest average order value?
-           - Show me customers who made more than 5 purchases
-           - What are the most popular payment methods by month?
-           
-           **Complex Questions:**
-           - What's the average delivery time by product category?
-           - Compare revenue by state and payment method
-           - Show me trends in order value over time
+            - What are our total sales by product category?
+            - How are different payment methods performing in terms of order value?
+            - Where are our customers located across states?
+
+            **Intermediate Questions:**
+            - Which states are generating the highest order values?
+            - Who are our most frequent buyers and what's their total spend?
+            - How do customers prefer to pay across different months?
+
+            **Complex Questions:**
+            - How long does it take us to deliver different product categories?
+            - Break down our revenue by state and payment type
+            - How are our average order values trending over time?
            """)
        
        with st.form(key="query_form"):

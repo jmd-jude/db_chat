@@ -1,114 +1,114 @@
 business_context:
-  description: "E-commerce platform selling electronics and office supplies"
+  description: Direct to consumer business selling computer electronics devices and accessories
   key_concepts:
-    - "Customer lifetime value tracked through order history"
-    - "Seasonal sales patterns (Nov-Dec peak)"
-    - "Geographic distribution affects product preferences"
-
+  - Orders ship on the same day as the order date
+  - Retention is defined as a customer who purchased in the past 0-12 months and also had a purchase previous to that 0-12 month period
 database_config:
-  type: "sqlite"
+  type: sqlite
   date_functions:
-    year: "strftime('%Y', {})"
-    month: "strftime('%Y-%m', {})"
-    date: "strftime('%Y-%m-%d', {})"
+    year: strftime('%Y', {column})
+    month: strftime('%Y-%m', {column})
+    date: strftime('%Y-%m-%d', {column})
   date_formats:
-    literal: "YYYY-MM-DD"
-    year: "YYYY"
-    month: "YYYY-MM"
-  example_queries:
-    - description: "Monthly revenue"
-      query: >
-        SELECT 
-          strftime('%Y-%m', order_date) AS month,
-          SUM(total_price) AS revenue
-        FROM orders
-        GROUP BY month
-        ORDER BY month;
-    - description: "Average order value by payment method"
-      query: >
-        SELECT 
-          payment_method,
-          AVG(total_price) AS avg_order_value
-        FROM orders
-        GROUP BY payment_method
-        ORDER BY avg_order_value DESC;
-    - description: "State-wise average order value"
-      query: >
-        SELECT 
-          c.state,
-          AVG(o.total_price) AS avg_order_value
-        FROM customers c
-        JOIN orders o ON c.id = o.customer_id
-        GROUP BY c.state
-        ORDER BY avg_order_value DESC;
-
+    literal: YYYY-MM-DD
+    year: YYYY
+    month: YYYY-MM
+  example_patterns:
+  - description: Monthly aggregation
+    pattern: strftime('%Y-%m', {column}) AS {alias}
+  - description: Year comparison
+    pattern: strftime('%Y', {column}) = '{year}'
+  - description: Date range
+    pattern: '{column} BETWEEN ''{start_date}'' AND ''{end_date}'''
 tables:
   customers:
-    description: "Customer profile and demographic information"
+    description: Table containing customers data
     fields:
       id:
-        type: "INTEGER"
-        description: "Unique customer identifier"
+        type: INTEGER
+        description: id field
         is_key: true
       name:
-        type: "TEXT"
-        description: "Customer's full name"
+        type: TEXT
+        description: name field
       email:
-        type: "TEXT"
-        description: "Primary contact method for communications"
+        type: TEXT
+        description: email field
+      phone:
+        type: TEXT
+        description: phone field
+      address:
+        type: TEXT
+        description: address field
       city:
-        type: "TEXT"
-        description: "Customer's city of residence"
+        type: TEXT
+        description: city field
       state:
-        type: "TEXT"
-        description: "Customer's state of residence"
-    relationships:
-      - table: "orders"
-        type: "one_to_many"
-        join_fields: ["id", "customer_id"]
-
+        type: TEXT
+        description: state field
+      country:
+        type: TEXT
+        description: country field
+      created_at:
+        type: TIMESTAMP
+        description: created_at field
+  sqlite_sequence:
+    description: Table containing sqlite_sequence data
+    fields:
+      name:
+        type: ''
+        description: name field
+      seq:
+        type: ''
+        description: seq field
   orders:
-    description: "Transaction records including products and payment details"
+    description: Table containing orders data
     fields:
       id:
-        type: "INTEGER"
-        description: "Unique order identifier"
+        type: INTEGER
+        description: id field
         is_key: true
       customer_id:
-        type: "INTEGER"
-        description: "Links to customer profile"
-        foreign_key: "customers.id"
+        type: INTEGER
+        description: customer_id field
+        foreign_key: customers.id
       product_name:
-        type: "TEXT"
-        description: "Name of purchased product"
+        type: TEXT
+        description: product_name field
       category:
-        type: "TEXT"
-        description: "Product category (Electronics, Office Supplies, Accessories)"
+        type: TEXT
+        description: category field
       quantity:
-        type: "INTEGER"
-        description: "Number of units purchased"
+        type: INTEGER
+        description: quantity field
       price:
-        type: "REAL"
-        description: "Unit price of product"
+        type: REAL
+        description: price field
       total_price:
-        type: "REAL"
-        description: "Final order amount (quantity * price)"
+        type: REAL
+        description: total_price field
       payment_method:
-        type: "TEXT"
-        description: "Payment method used (Credit Card, PayPal, Bank Transfer)"
+        type: TEXT
+        description: payment_method field
       order_date:
-        type: "TIMESTAMP"
-        description: "When order was placed"
-
+        type: TIMESTAMP
+        description: order_date field
+      delivery_date:
+        type: TIMESTAMP
+        description: delivery_date field
+    relationships:
+    - table: customers
+      type: many_to_one
+      join_fields:
+      - customer_id
+      - id
 query_guidelines:
   tips:
-    - "Use total_price for revenue calculations instead of price * quantity"
-    - "Join customers and orders tables using customer_id for customer analysis"
-    - "Consider seasonal patterns when analyzing time-series data"
-    - "Use proper date formatting for order_date comparisons"
-    
+  - Use proper table aliases in joins
+  - Include appropriate WHERE clauses
+  - Use proper date formatting for timestamp columns
+  - Consider using aggregation functions where appropriate
   validation:
-    - "Remove any SQL formatting characters before execution"
-    - "Ensure column references are fully qualified (table.column)"
-    - "Include proper type casting for numerical operations"
-    - "Use COALESCE for handling NULL values in calculations"
+  - Ensure column references are fully qualified (table.column)
+  - Include proper type casting for numerical operations
+  - Use COALESCE for handling NULL values in calculations
