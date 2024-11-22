@@ -9,6 +9,7 @@ import os
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 import traceback
+import importlib.util
 
 # Demo mode configuration
 DEMO_MODE = True  # Set to False to show all features
@@ -18,6 +19,12 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
    raise ValueError("OPENAI_API_KEY environment variable not set.")
+
+# Check if Snowflake dependencies are installed
+def is_snowflake_available():
+    snowflake_connector = importlib.util.find_spec("snowflake.connector")
+    snowflake_sqlalchemy = importlib.util.find_spec("snowflake.sqlalchemy")
+    return snowflake_connector is not None and snowflake_sqlalchemy is not None
 
 # Load prompts from YAML
 def load_prompts():
@@ -59,6 +66,18 @@ def generate_analysis(data, selected_prompt):
    
    response = llm.invoke(messages)
    return response.content
+
+def validate_snowflake_env():
+    required_vars = [
+        'SNOWFLAKE_ACCOUNT',
+        'SNOWFLAKE_USER',
+        'SNOWFLAKE_PASSWORD',
+        'SNOWFLAKE_DATABASE',
+        'SNOWFLAKE_WAREHOUSE',
+        'SNOWFLAKE_SCHEMA'
+    ]
+    missing_vars = [var for var in required_vars if not os.getenv(var)]
+    return len(missing_vars) == 0, missing_vars
 
 def main():
   st.title("Talk with Your Data")
@@ -201,6 +220,31 @@ def main():
   with tab2:
        st.header("Ask Questions About Your Data")
        
+       # Check if Snowflake is available
+       snowflake_available = is_snowflake_available()
+       
+       # Database selection
+       db_options = ["SQLite"]
+       if snowflake_available:
+           db_options.append("Snowflake")
+       
+       db_type = st.selectbox(
+           "Select Database",
+           db_options,
+           key="db_selector"
+       ).lower()
+       
+       if not snowflake_available and len(db_options) == 1:
+           st.info("Snowflake support is not available. Only SQLite queries are supported.")
+       
+       # Validate Snowflake environment variables if Snowflake is selected
+       if db_type == "snowflake":
+           is_valid, missing_vars = validate_snowflake_env()
+           if not is_valid:
+               st.error(f"Missing required Snowflake environment variables: {', '.join(missing_vars)}")
+               st.info("Please set these environment variables in your Streamlit Cloud deployment settings.")
+               st.stop()
+       
        with st.expander("Example Questions", expanded=False):
            st.markdown("""
            **Simple Questions:**
@@ -234,10 +278,10 @@ def main():
        if submit and user_question:
            with st.spinner("Generating and executing query..."):
                try:
-                   sql_query = generate_dynamic_query(user_question)
+                   sql_query = generate_dynamic_query(user_question, db_type=db_type)
                    st.code(sql_query, language="sql")  # Always show the query
                    
-                   results = execute_dynamic_query(sql_query, user_question)
+                   results = execute_dynamic_query(sql_query, user_question, db_type=db_type)
                    if isinstance(results, pd.DataFrame):
                        st.dataframe(results)
                    else:

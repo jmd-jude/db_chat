@@ -10,6 +10,8 @@ from datetime import datetime
 import logging
 import os
 import json
+from snowflake.sqlalchemy import URL
+from sqlalchemy import create_engine
 
 # Set up logging
 log_dir = "logs"
@@ -24,6 +26,34 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
+
+class DatabaseConnection:
+    def __init__(self, db_type="sqlite"):
+        self.db_type = db_type
+        self.engine = None
+        self.connection = None
+    
+    def get_connection(self):
+        if self.db_type == "sqlite":
+            return sqlite3.connect('sample.db')
+        elif self.db_type == "snowflake":
+            if not self.engine:
+                self.engine = create_engine(URL(
+                    account=os.getenv('SNOWFLAKE_ACCOUNT'),
+                    user=os.getenv('SNOWFLAKE_USER'),
+                    password=os.getenv('SNOWFLAKE_PASSWORD'),
+                    database=os.getenv('SNOWFLAKE_DATABASE'),
+                    warehouse=os.getenv('SNOWFLAKE_WAREHOUSE'),
+                    schema=os.getenv('SNOWFLAKE_SCHEMA')
+                ))
+            return self.engine.connect()
+        else:
+            raise ValueError(f"Unsupported database type: {self.db_type}")
+    
+    def close(self):
+        if self.connection:
+            self.connection.close()
+            self.connection = None
 
 class QueryMemoryManager:
     def __init__(self, window_size=5):
@@ -46,8 +76,9 @@ class QueryMemoryManager:
         # Log the interaction
         logging.info(json.dumps(interaction, indent=2))
 
-def load_schema_config():
-    with open('schema_config.yaml', 'r') as file:
+def load_schema_config(db_type="sqlite"):
+    config_file = 'schema_config.yaml' if db_type == 'sqlite' else 'snowflake_schema_config.yaml'
+    with open(config_file, 'r') as file:
         return yaml.safe_load(file)
 
 def format_schema_context(config):
@@ -96,22 +127,28 @@ def format_example_queries(config):
     
     return "\n".join(examples)
 
-def sanitize_sql(query):
+def sanitize_sql(query, db_type="sqlite"):
     """Sanitize SQL query using database-specific patterns"""
     # Remove SQL code blocks
     query = re.sub(r'```sql|```', '', query)
     
-    # Fix date literals - ensure proper quoting
-    query = re.sub(r'(\d{4}-\d{2}-\d{2})', r"'\1'", query)
-    query = re.sub(r'(\d{4}-\d{2})', r"'\1'", query)
+    if db_type == "sqlite":
+        # Fix date literals - ensure proper quoting
+        query = re.sub(r'(\d{4}-\d{2}-\d{2})', r"'\1'", query)
+        query = re.sub(r'(\d{4}-\d{2})', r"'\1'", query)
+    elif db_type == "snowflake":
+        # Convert SQLite date functions to Snowflake equivalents
+        query = re.sub(r"strftime\('%Y', ([^)]+)\)", r"DATE_PART('YEAR', \1)", query)
+        query = re.sub(r"strftime\('%Y-%m', ([^)]+)\)", r"DATE_TRUNC('MONTH', \1)", query)
+        query = re.sub(r"strftime\('%Y-%m-%d', ([^)]+)\)", r"DATE_TRUNC('DAY', \1)", query)
     
     # Fix spacing around operators
     query = re.sub(r'\s*([=<>])\s*', r' \1 ', query)
     
     return query.strip()
 
-def create_sql_generation_prompt(chat_history=None):
-    config = load_schema_config()
+def create_sql_generation_prompt(db_type="sqlite", chat_history=None):
+    config = load_schema_config(db_type)
     schema_context = format_schema_context(config)
     example_queries = format_example_queries(config)
     
@@ -148,28 +185,21 @@ def create_sql_generation_prompt(chat_history=None):
 
 memory_manager = QueryMemoryManager()
 
-def generate_dynamic_query(question: str, thread_id: str = "default"):
+def generate_dynamic_query(question: str, thread_id: str = "default", db_type: str = "sqlite"):
     llm = ChatOpenAI(model="gpt-3.5-turbo")
     chat_history = memory_manager.get_chat_history(thread_id)
-    prompt = create_sql_generation_prompt(chat_history)
+    prompt = create_sql_generation_prompt(db_type, chat_history)
     
     messages = prompt.format_messages(question=question)
     response = llm.invoke(messages)
-    return sanitize_sql(response.content)
+    return sanitize_sql(response.content, db_type)
 
-def execute_dynamic_query(query: str, question: str = None, thread_id: str = "default"):
-    conn = sqlite3.connect('sample.db')
+def execute_dynamic_query(query: str, question: str = None, thread_id: str = "default", db_type: str = "sqlite"):
+    db = DatabaseConnection(db_type)
+    conn = db.get_connection()
     try:
-        # Test the query first
-        cursor = conn.cursor()
-        cursor.execute(query)
-        column_names = [description[0] for description in cursor.description]
-        
-        # Now execute with pandas
+        # Execute with pandas
         result = pd.read_sql_query(query, conn)
-        
-        # Ensure column names are preserved
-        result.columns = column_names
         
         if question:
             memory_manager.save_interaction(thread_id, question, query, result)
@@ -180,4 +210,4 @@ def execute_dynamic_query(query: str, question: str = None, thread_id: str = "de
             memory_manager.save_interaction(thread_id, question, query, error_msg)
         return error_msg
     finally:
-        conn.close()
+        db.close()
