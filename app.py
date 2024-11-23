@@ -22,7 +22,7 @@ if os.path.exists(".env"):
     load_dotenv(override=True)
 
 # Feature flags
-SHOW_SCHEMA_EDITOR = True  # Set to True to show schema editor in sidebar
+SHOW_SCHEMA_EDITOR = False  # Set to False to hide schema editor in sidebar
 
 # Initialize schema manager
 schema_manager = SchemaManager()
