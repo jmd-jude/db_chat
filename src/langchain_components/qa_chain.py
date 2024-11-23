@@ -12,6 +12,11 @@ import os
 import json
 from snowflake.sqlalchemy import URL
 from sqlalchemy import create_engine
+from dotenv import load_dotenv
+import sqlparse
+
+# Load environment variables
+load_dotenv(override=True)
 
 # Set up logging
 log_dir = "logs"
@@ -26,6 +31,23 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
+
+def get_openai_client():
+    """Initialize OpenAI client with API key."""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OpenAI API key not found in environment variables")
+    
+    # Log API key details (for debugging)
+    logging.info(f"API Key found: {bool(api_key)}")
+    logging.info(f"API Key length: {len(api_key)}")
+    logging.info(f"API Key prefix: {api_key[:7]}...")
+    
+    return ChatOpenAI(
+        api_key=api_key,
+        model="gpt-3.5-turbo",
+        temperature=0
+    )
 
 class DatabaseConnection:
     def __init__(self, db_type="sqlite"):
@@ -77,9 +99,27 @@ class QueryMemoryManager:
         logging.info(json.dumps(interaction, indent=2))
 
 def load_schema_config(db_type="sqlite"):
-    config_file = 'schema_config.yaml' if db_type == 'sqlite' else 'snowflake_schema_config.yaml'
-    with open(config_file, 'r') as file:
-        return yaml.safe_load(file)
+    """Load schema configuration from file."""
+    try:
+        config_path = os.path.join('schema_configs', f'{db_type}_schema_config.yaml')
+        if not os.path.exists(config_path):
+            config_path = 'schema_config.yaml' if db_type == 'sqlite' else 'snowflake_schema_config.yaml'
+        
+        with open(config_path, 'r') as file:
+            return yaml.safe_load(file)
+    except Exception as e:
+        logging.error(f"Error loading schema config: {str(e)}")
+        raise
+
+def load_prompt_config():
+    """Load prompt configuration from YAML."""
+    try:
+        with open('prompts.yaml', 'r') as file:
+            config = yaml.safe_load(file)
+            return config['prompts']['sql_generation']
+    except Exception as e:
+        logging.error(f"Error loading prompt config: {str(e)}")
+        raise
 
 def format_schema_context(config):
     """Convert schema config into prompt-friendly format"""
@@ -128,30 +168,48 @@ def format_example_queries(config):
     return "\n".join(examples)
 
 def sanitize_sql(query, db_type="sqlite"):
-    """Sanitize SQL query using database-specific patterns"""
-    # Remove SQL code blocks
+    """Sanitize SQL query using sqlparse for better reliability."""
+    # Remove SQL code blocks if present
     query = re.sub(r'```sql|```', '', query)
     
-    if db_type == "sqlite":
-        # Fix date literals - ensure proper quoting
-        query = re.sub(r'(\d{4}-\d{2}-\d{2})', r"'\1'", query)
-        query = re.sub(r'(\d{4}-\d{2})', r"'\1'", query)
-    elif db_type == "snowflake":
+    # Format the SQL properly using sqlparse
+    formatted = sqlparse.format(
+        query,
+        reindent=True,
+        keyword_case='upper',
+        identifier_case='lower',
+        strip_comments=True,
+        use_space_around_operators=True
+    )
+    
+    # Handle database-specific date functions
+    if db_type == "snowflake":
         # Convert SQLite date functions to Snowflake equivalents
-        query = re.sub(r"strftime\('%Y', ([^)]+)\)", r"DATE_PART('YEAR', \1)", query)
-        query = re.sub(r"strftime\('%Y-%m', ([^)]+)\)", r"DATE_TRUNC('MONTH', \1)", query)
-        query = re.sub(r"strftime\('%Y-%m-%d', ([^)]+)\)", r"DATE_TRUNC('DAY', \1)", query)
+        formatted = formatted.replace(
+            "strftime('%Y'", "DATE_PART('YEAR'"
+        ).replace(
+            "strftime('%Y-%m'", "DATE_TRUNC('MONTH'"
+        ).replace(
+            "strftime('%Y-%m-%d'", "DATE_TRUNC('DAY'"
+        )
     
-    # Fix spacing around operators
-    query = re.sub(r'\s*([=<>])\s*', r' \1 ', query)
-    
-    return query.strip()
+    return formatted.strip()
 
 def create_sql_generation_prompt(db_type="sqlite", chat_history=None):
+    """Create prompt template using configuration from YAML."""
+    # Load configurations
     config = load_schema_config(db_type)
+    prompt_config = load_prompt_config()
+    
+    # Get database-specific rules if they exist
+    query_rules = prompt_config.get('database_specific', {}).get(db_type, {}).get('query_rules', prompt_config['query_rules'])
+    formatted_rules = "\n".join(f"{i+1}. {rule}" for i, rule in enumerate(query_rules))
+    
+    # Format schema and example contexts
     schema_context = format_schema_context(config)
     example_queries = format_example_queries(config)
     
+    # Format history context
     history_context = ""
     if chat_history:
         history_text = "\n".join([
@@ -160,41 +218,37 @@ def create_sql_generation_prompt(db_type="sqlite", chat_history=None):
         ])
         history_context = f"\nRecent Query History:\n{history_text}\n"
     
-    template = f"""You are an expert SQL query generator for a {config['database_config']['type']} database.
-    Given the schema, business context, and query history below, generate a SQL query to answer the question.
-
-    {schema_context}
+    # Fill in the template
+    prompt_text = prompt_config['template'].format(
+        base_role=prompt_config['base_role'].format(database_type=config['database_config']['type']),
+        main_instruction=prompt_config['main_instruction'],
+        schema_context=schema_context,
+        example_queries=example_queries,
+        history_context=history_context,
+        formatted_rules=formatted_rules,
+        question="{question}"  # Left for ChatPromptTemplate to fill
+    )
     
-    {example_queries}
-    
-    {history_context}
-    Question: {{question}}
-
-    Return only the SQL query, nothing else.
-    Ensure the query:
-    1. Uses proper table aliases when joining
-    2. Uses proper date formatting for timestamps
-    3. Uses proper column names as defined in the schema
-    4. Always includes column aliases for aggregated fields
-    5. Always uses table aliases in column references
-    6. Groups results appropriately when using aggregations
-
-    SQL Query:"""
-    
-    return ChatPromptTemplate.from_template(template)
+    return ChatPromptTemplate.from_template(prompt_text)
 
 memory_manager = QueryMemoryManager()
 
 def generate_dynamic_query(question: str, thread_id: str = "default", db_type: str = "sqlite"):
-    llm = ChatOpenAI(model="gpt-3.5-turbo")
-    chat_history = memory_manager.get_chat_history(thread_id)
-    prompt = create_sql_generation_prompt(db_type, chat_history)
-    
-    messages = prompt.format_messages(question=question)
-    response = llm.invoke(messages)
-    return sanitize_sql(response.content, db_type)
+    """Generate SQL query from natural language question."""
+    try:
+        llm = get_openai_client()
+        chat_history = memory_manager.get_chat_history(thread_id)
+        prompt = create_sql_generation_prompt(db_type, chat_history)
+        
+        messages = prompt.format_messages(question=question)
+        response = llm.invoke(messages)
+        return sanitize_sql(response.content, db_type)
+    except Exception as e:
+        logging.error(f"Error generating query: {str(e)}")
+        raise
 
 def execute_dynamic_query(query: str, question: str = None, thread_id: str = "default", db_type: str = "sqlite"):
+    """Execute generated SQL query and return results."""
     db = DatabaseConnection(db_type)
     conn = db.get_connection()
     try:

@@ -1,0 +1,100 @@
+business_context:
+  description: Direct to consumer business selling computer electronics devices and
+    accessories
+  key_concepts:
+  - Orders ship on the same day as the order date
+  - Retention is defined as a customer who purchased in the past 0-12 months and also
+    had a purchase previous to that period
+database_config:
+  type: sqlite
+  date_functions:
+    year: strftime('%Y', {column})
+    month: strftime('%Y-%m', {column})
+    date: strftime('%Y-%m-%d', {column})
+  date_formats:
+    literal: YYYY-MM-DD
+    year: YYYY
+    month: YYYY-MM
+tables:
+  customers:
+    description: Main customer information table
+    fields:
+      id:
+        type: INTEGER
+        description: Unique customer id
+        is_key: true
+      name:
+        type: TEXT
+        description: Customer's full name
+      email:
+        type: TEXT
+        description: Customer's primary email address for communications
+      phone:
+        type: TEXT
+        description: Customer's contact phone number
+      address:
+        type: TEXT
+        description: Customer's shipping address
+      city:
+        type: TEXT
+        description: Customer's city
+      state:
+        type: TEXT
+        description: Customer's state
+      country:
+        type: TEXT
+        description: Customer's country
+      created_at:
+        type: TIMESTAMP
+        description: When the customer account was created
+  orders:
+    description: Customer order transactions
+    fields:
+      id:
+        type: INTEGER
+        description: Unique order identifier
+        is_key: true
+      customer_id:
+        type: INTEGER
+        description: Reference to customer who placed the order
+        foreign_key: customers.id
+      product_name:
+        type: TEXT
+        description: Name of the product ordered
+      category:
+        type: TEXT
+        description: Product category
+      quantity:
+        type: INTEGER
+        description: Number of items ordered
+      price:
+        type: REAL
+        description: Price per item
+      total_price:
+        type: REAL
+        description: Total order amount including all items
+      payment_method:
+        type: TEXT
+        description: Method of payment used
+      order_date:
+        type: TIMESTAMP
+        description: When the order was placed
+      delivery_date:
+        type: TIMESTAMP
+        description: Expected delivery date
+    relationships:
+    - table: customers
+      type: many_to_one
+      join_fields:
+      - customer_id
+      - id
+query_guidelines:
+  tips:
+  - Always use table aliases in joins
+  - Include WHERE clauses to filter data appropriately
+  - Use proper date formatting for timestamp columns
+  - Include appropriate GROUP BY clauses for aggregations
+  validation:
+  - Ensure column references are fully qualified (table.column)
+  - Use proper type casting for numerical operations
+  - Handle NULL values appropriately in calculations

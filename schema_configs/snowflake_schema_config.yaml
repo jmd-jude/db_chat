@@ -1,0 +1,49 @@
+business_context:
+  description: Data warehouse for analytics and reporting
+  key_concepts:
+  - Fact and dimension tables follow star schema design
+  - Historical data is retained indefinitely
+  - ETL runs daily at midnight UTC
+database_config:
+  type: snowflake
+  date_functions:
+    year: DATE_PART('YEAR', {column})
+    month: DATE_TRUNC('MONTH', {column})
+    date: DATE_TRUNC('DAY', {column})
+tables:
+  FACT_ORDERS:
+    description: Fact table containing order transactions
+    fields:
+      ORDER_ID:
+        type: NUMBER
+        description: Unique identifier for each order
+        is_key: true
+      CUSTOMER_ID:
+        type: NUMBER
+        description: Reference to DIM_CUSTOMERS table
+        foreign_key: DIM_CUSTOMERS.CUSTOMER_ID
+      ORDER_DATE:
+        type: TIMESTAMP_NTZ
+        description: Date and time when order was placed
+      TOTAL_AMOUNT:
+        type: NUMBER(38,2)
+        description: Total order amount including tax and shipping
+  DIM_CUSTOMERS:
+    description: Customer dimension table
+    fields:
+      CUSTOMER_ID:
+        type: NUMBER
+        description: Unique identifier for each customer
+        is_key: true
+      EMAIL:
+        type: VARCHAR(255)
+        description: Primary email address used for customer communications
+      FIRST_NAME:
+        type: VARCHAR(50)
+        description: Customer's first name
+      LAST_NAME:
+        type: VARCHAR(50)
+        description: Customer's last name
+      CREATED_DATE:
+        type: TIMESTAMP_NTZ
+        description: Date when customer record was created
