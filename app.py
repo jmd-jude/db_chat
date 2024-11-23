@@ -2,12 +2,20 @@ import streamlit as st
 import os
 from dotenv import load_dotenv
 import yaml
-from src.schema_manager import SchemaManager
-from src.database.schema_inspector import inspect_database
-from src.langchain_components.qa_chain import generate_dynamic_query, execute_dynamic_query
 import pandas as pd
 import importlib.util
 import traceback
+import sys
+from pathlib import Path
+
+# Add the project root to Python path
+project_root = Path(__file__).parent
+sys.path.append(str(project_root))
+
+# Now import our local modules
+from src.schema_manager import SchemaManager
+from src.database.schema_inspector import inspect_database
+from src.langchain_components.qa_chain import generate_dynamic_query, execute_dynamic_query
 
 # Load environment variables - only in local development
 if os.path.exists(".env"):
@@ -23,8 +31,13 @@ def get_snowflake_credentials():
     """Get Snowflake credentials from environment or streamlit secrets."""
     try:
         # Try to get from streamlit secrets first (for cloud deployment)
+        account = st.secrets.snowflake.account
+        # Remove any duplicate .snowflakecomputing.com
+        if '.snowflakecomputing.com' in account:
+            account = account.replace('.snowflakecomputing.com', '')
+        
         return {
-            'account': st.secrets.snowflake.account,
+            'account': account,
             'user': st.secrets.snowflake.user,
             'password': st.secrets.snowflake.password,
             'database': st.secrets.snowflake.database,
@@ -33,8 +46,12 @@ def get_snowflake_credentials():
         }
     except Exception:
         # Fall back to environment variables (for local development)
+        account = os.getenv('SNOWFLAKE_ACCOUNT', '')
+        if '.snowflakecomputing.com' in account:
+            account = account.replace('.snowflakecomputing.com', '')
+            
         return {
-            'account': os.getenv('SNOWFLAKE_ACCOUNT'),
+            'account': account,
             'user': os.getenv('SNOWFLAKE_USER'),
             'password': os.getenv('SNOWFLAKE_PASSWORD'),
             'database': os.getenv('SNOWFLAKE_DATABASE'),
