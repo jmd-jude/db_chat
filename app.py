@@ -9,37 +9,58 @@ import pandas as pd
 import importlib.util
 import traceback
 
-# Load environment variables
-load_dotenv(override=True)
+# Load environment variables - only in local development
+if os.path.exists(".env"):
+    load_dotenv(override=True)
 
 # Feature flags
-SHOW_SCHEMA_EDITOR = False  # Set to True to show schema editor in sidebar
+SHOW_SCHEMA_EDITOR = True  # Set to True to show schema editor in sidebar
 
 # Initialize schema manager
 schema_manager = SchemaManager()
 
+def get_snowflake_credentials():
+    """Get Snowflake credentials from environment or streamlit secrets."""
+    try:
+        # Try to get from streamlit secrets first (for cloud deployment)
+        return {
+            'account': st.secrets.snowflake.account,
+            'user': st.secrets.snowflake.user,
+            'password': st.secrets.snowflake.password,
+            'database': st.secrets.snowflake.database,
+            'warehouse': st.secrets.snowflake.warehouse,
+            'schema': st.secrets.snowflake.schema
+        }
+    except Exception:
+        # Fall back to environment variables (for local development)
+        return {
+            'account': os.getenv('SNOWFLAKE_ACCOUNT'),
+            'user': os.getenv('SNOWFLAKE_USER'),
+            'password': os.getenv('SNOWFLAKE_PASSWORD'),
+            'database': os.getenv('SNOWFLAKE_DATABASE'),
+            'warehouse': os.getenv('SNOWFLAKE_WAREHOUSE'),
+            'schema': os.getenv('SNOWFLAKE_SCHEMA')
+        }
+
 def check_api_key():
     """Check if OpenAI API key is configured."""
-    api_key = os.getenv("OPENAI_API_KEY")
+    try:
+        api_key = st.secrets.openai.api_key
+    except Exception:
+        api_key = os.getenv("OPENAI_API_KEY")
+    
     if not api_key:
-        st.error("OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.")
+        st.error("OpenAI API key not found. Please set the OPENAI_API_KEY in environment variables or Streamlit secrets.")
         st.stop()
 
 def check_snowflake_config():
     """Check Snowflake configuration."""
-    required_vars = [
-        'SNOWFLAKE_ACCOUNT',
-        'SNOWFLAKE_USER',
-        'SNOWFLAKE_PASSWORD',
-        'SNOWFLAKE_DATABASE',
-        'SNOWFLAKE_WAREHOUSE',
-        'SNOWFLAKE_SCHEMA'
-    ]
-    missing_vars = [var for var in required_vars if not os.getenv(var)]
+    creds = get_snowflake_credentials()
+    missing_vars = [key for key, value in creds.items() if not value]
     
     if missing_vars:
         st.error(f"Missing Snowflake configuration: {', '.join(missing_vars)}")
-        st.info("Please set these environment variables to use Snowflake.")
+        st.info("Please set these values in Streamlit secrets or environment variables.")
         st.stop()
 
 def load_or_create_schema():
@@ -49,21 +70,17 @@ def load_or_create_schema():
     if not config:
         st.info("Generating schema configuration...")
         try:
+            creds = get_snowflake_credentials()
             config = inspect_database(
                 db_type="snowflake",
-                account=os.getenv('SNOWFLAKE_ACCOUNT'),
-                user=os.getenv('SNOWFLAKE_USER'),
-                password=os.getenv('SNOWFLAKE_PASSWORD'),
-                database=os.getenv('SNOWFLAKE_DATABASE'),
-                warehouse=os.getenv('SNOWFLAKE_WAREHOUSE'),
-                schema=os.getenv('SNOWFLAKE_SCHEMA')
+                **creds
             )
             schema_manager.save_config("snowflake", config)
             st.success("Schema configuration generated successfully!")
         except Exception as e:
-            st.error(f"Error generating schema configuration: {str(e)}")
-            st.error("Full error details:")
-            st.exception(e)
+            st.error("Error connecting to Snowflake. Please check your credentials and network settings.")
+            st.error("If you're using Streamlit Cloud, ensure all secrets are properly configured.")
+            st.error(f"Error details: {str(e)}")
             st.stop()
     
     return config
@@ -190,9 +207,8 @@ def main():
                     st.error(f"Error executing query: {results}")
         
         except Exception as e:
-            st.error(f"Error: {str(e)}")
-            st.error("Full error details:")
-            st.exception(e)
+            st.error("An error occurred while processing your question.")
+            st.error(f"Error details: {str(e)}")
 
 if __name__ == "__main__":
     main()
