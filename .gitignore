@@ -12,3 +12,4 @@ __pycache__/
 /.streamlit/.streamlit.toml
 **/secrets.toml
 *.toml
+README2.md
