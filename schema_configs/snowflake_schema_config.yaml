@@ -1,9 +1,9 @@
 business_context:
-  description: Data warehouse for analytics and reporting
+  description: Auto-generated schema configuration for Snowflake TPC-H sample data
   key_concepts:
-  - Fact and dimension tables follow star schema design
-  - Historical data is retained indefinitely
-  - ETL runs daily at midnight UTC
+  - TPC-H is a decision support benchmark
+  - Consists of a suite of business-oriented ad-hoc queries
+  - Models a wholesale supplier managing sales orders
 database_config:
   type: snowflake
   date_functions:
@@ -11,39 +11,414 @@ database_config:
     month: DATE_TRUNC('MONTH', {column})
     date: DATE_TRUNC('DAY', {column})
 tables:
-  FACT_ORDERS:
-    description: Fact table containing order transactions
+  CUSTOMER:
+    description: Contains customer information including demographics and market segments
     fields:
-      ORDER_ID:
+      C_CUSTOMER_SK:
         type: NUMBER
-        description: Unique identifier for each order
+        description: C_CUSTOMER_SK field
+        nullable: false
+      C_CUSTKEY:
+        type: NUMBER
+        description: Unique identifier for the customer
+        nullable: false
         is_key: true
-      CUSTOMER_ID:
+      C_NAME:
+        type: TEXT
+        description: Customer name
+        nullable: false
+      C_CUSTOMER_ID:
+        type: TEXT
+        description: C_CUSTOMER_ID field
+        nullable: false
+      C_ADDRESS:
+        type: TEXT
+        description: Customer address
+        nullable: false
+      C_CURRENT_CDEMO_SK:
         type: NUMBER
-        description: Reference to DIM_CUSTOMERS table
-        foreign_key: DIM_CUSTOMERS.CUSTOMER_ID
-      ORDER_DATE:
-        type: TIMESTAMP_NTZ
-        description: Date and time when order was placed
-      TOTAL_AMOUNT:
-        type: NUMBER(38,2)
-        description: Total order amount including tax and shipping
-  DIM_CUSTOMERS:
-    description: Customer dimension table
+        description: C_CURRENT_CDEMO_SK field
+        nullable: true
+      C_CURRENT_HDEMO_SK:
+        type: NUMBER
+        description: C_CURRENT_HDEMO_SK field
+        nullable: true
+      C_NATIONKEY:
+        type: NUMBER
+        description: Reference to the nation where the customer is located
+        nullable: false
+        foreign_key: NATION.N_NATIONKEY
+      C_PHONE:
+        type: TEXT
+        description: Customer phone number
+        nullable: false
+      C_CURRENT_ADDR_SK:
+        type: NUMBER
+        description: C_CURRENT_ADDR_SK field
+        nullable: true
+      C_FIRST_SHIPTO_DATE_SK:
+        type: NUMBER
+        description: C_FIRST_SHIPTO_DATE_SK field
+        nullable: true
+      C_ACCTBAL:
+        type: NUMBER
+        description: Customer account balance
+        nullable: false
+      C_MKTSEGMENT:
+        type: TEXT
+        description: Market segment to which the customer belongs
+        nullable: true
+      C_FIRST_SALES_DATE_SK:
+        type: NUMBER
+        description: C_FIRST_SALES_DATE_SK field
+        nullable: true
+      C_COMMENT:
+        type: TEXT
+        description: Additional comments about the customer
+        nullable: true
+      C_SALUTATION:
+        type: TEXT
+        description: C_SALUTATION field
+        nullable: true
+      C_FIRST_NAME:
+        type: TEXT
+        description: C_FIRST_NAME field
+        nullable: true
+      C_LAST_NAME:
+        type: TEXT
+        description: C_LAST_NAME field
+        nullable: true
+      C_PREFERRED_CUST_FLAG:
+        type: TEXT
+        description: C_PREFERRED_CUST_FLAG field
+        nullable: true
+      C_BIRTH_DAY:
+        type: NUMBER
+        description: C_BIRTH_DAY field
+        nullable: true
+      C_BIRTH_MONTH:
+        type: NUMBER
+        description: C_BIRTH_MONTH field
+        nullable: true
+      C_BIRTH_YEAR:
+        type: NUMBER
+        description: C_BIRTH_YEAR field
+        nullable: true
+      C_BIRTH_COUNTRY:
+        type: TEXT
+        description: C_BIRTH_COUNTRY field
+        nullable: true
+      C_LOGIN:
+        type: TEXT
+        description: C_LOGIN field
+        nullable: true
+      C_EMAIL_ADDRESS:
+        type: TEXT
+        description: C_EMAIL_ADDRESS field
+        nullable: true
+      C_LAST_REVIEW_DATE:
+        type: TEXT
+        description: C_LAST_REVIEW_DATE field
+        nullable: true
+    relationships:
+    - table: NATION
+      type: many_to_one
+      join_fields:
+      - C_NATIONKEY
+      - N_NATIONKEY
+  LINEITEM:
+    description: Contains the line items of all orders, representing the sales details
+      of each transaction
     fields:
-      CUSTOMER_ID:
+      L_ORDERKEY:
         type: NUMBER
-        description: Unique identifier for each customer
+        description: L_ORDERKEY field
+        nullable: false
         is_key: true
-      EMAIL:
-        type: VARCHAR(255)
-        description: Primary email address used for customer communications
-      FIRST_NAME:
-        type: VARCHAR(50)
-        description: Customer's first name
-      LAST_NAME:
-        type: VARCHAR(50)
-        description: Customer's last name
-      CREATED_DATE:
-        type: TIMESTAMP_NTZ
-        description: Date when customer record was created
+        foreign_key: ORDERS.O_ORDERKEY
+      L_PARTKEY:
+        type: NUMBER
+        description: L_PARTKEY field
+        nullable: false
+        foreign_key: PART.P_PARTKEY
+      L_SUPPKEY:
+        type: NUMBER
+        description: L_SUPPKEY field
+        nullable: false
+        foreign_key: SUPPLIER.S_SUPPKEY
+      L_LINENUMBER:
+        type: NUMBER
+        description: L_LINENUMBER field
+        nullable: false
+        is_key: true
+      L_QUANTITY:
+        type: NUMBER
+        description: L_QUANTITY field
+        nullable: false
+      L_EXTENDEDPRICE:
+        type: NUMBER
+        description: L_EXTENDEDPRICE field
+        nullable: false
+      L_DISCOUNT:
+        type: NUMBER
+        description: L_DISCOUNT field
+        nullable: false
+      L_TAX:
+        type: NUMBER
+        description: L_TAX field
+        nullable: false
+      L_RETURNFLAG:
+        type: TEXT
+        description: L_RETURNFLAG field
+        nullable: false
+      L_LINESTATUS:
+        type: TEXT
+        description: L_LINESTATUS field
+        nullable: false
+      L_SHIPDATE:
+        type: DATE
+        description: L_SHIPDATE field
+        nullable: false
+      L_COMMITDATE:
+        type: DATE
+        description: L_COMMITDATE field
+        nullable: false
+      L_RECEIPTDATE:
+        type: DATE
+        description: L_RECEIPTDATE field
+        nullable: false
+      L_SHIPINSTRUCT:
+        type: TEXT
+        description: L_SHIPINSTRUCT field
+        nullable: false
+      L_SHIPMODE:
+        type: TEXT
+        description: L_SHIPMODE field
+        nullable: false
+      L_COMMENT:
+        type: TEXT
+        description: L_COMMENT field
+        nullable: false
+    relationships:
+    - table: ORDERS
+      type: many_to_one
+      join_fields:
+      - L_ORDERKEY
+      - O_ORDERKEY
+    - table: PART
+      type: many_to_one
+      join_fields:
+      - L_PARTKEY
+      - P_PARTKEY
+    - table: SUPPLIER
+      type: many_to_one
+      join_fields:
+      - L_SUPPKEY
+      - S_SUPPKEY
+  NATION:
+    description: Contains information about nations/countries
+    fields:
+      N_NATIONKEY:
+        type: NUMBER
+        description: N_NATIONKEY field
+        nullable: false
+        is_key: true
+      N_NAME:
+        type: TEXT
+        description: N_NAME field
+        nullable: false
+      N_REGIONKEY:
+        type: NUMBER
+        description: N_REGIONKEY field
+        nullable: false
+        foreign_key: REGION.R_REGIONKEY
+      N_COMMENT:
+        type: TEXT
+        description: N_COMMENT field
+        nullable: true
+    relationships:
+    - table: REGION
+      type: many_to_one
+      join_fields:
+      - N_REGIONKEY
+      - R_REGIONKEY
+  ORDERS:
+    description: Contains all orders made by customers
+    fields:
+      O_ORDERKEY:
+        type: NUMBER
+        description: Unique identifier for the order
+        nullable: false
+        is_key: true
+      O_CUSTKEY:
+        type: NUMBER
+        description: Reference to the customer who placed the order
+        nullable: false
+        foreign_key: CUSTOMER.C_CUSTKEY
+      O_ORDERSTATUS:
+        type: TEXT
+        description: Current status of the order
+        nullable: false
+      O_TOTALPRICE:
+        type: NUMBER
+        description: Total price of the order
+        nullable: false
+      O_ORDERDATE:
+        type: DATE
+        description: Date when the order was placed
+        nullable: false
+      O_ORDERPRIORITY:
+        type: TEXT
+        description: Priority level of the order
+        nullable: false
+      O_CLERK:
+        type: TEXT
+        description: Clerk who processed the order
+        nullable: false
+      O_SHIPPRIORITY:
+        type: NUMBER
+        description: Shipping priority of the order
+        nullable: false
+      O_COMMENT:
+        type: TEXT
+        description: Additional comments about the order
+        nullable: false
+    relationships:
+    - table: CUSTOMER
+      type: many_to_one
+      join_fields:
+      - O_CUSTKEY
+      - C_CUSTKEY
+  PART:
+    description: Contains information about parts/products available for sale
+    fields:
+      P_PARTKEY:
+        type: NUMBER
+        description: P_PARTKEY field
+        nullable: false
+        is_key: true
+      P_NAME:
+        type: TEXT
+        description: P_NAME field
+        nullable: false
+      P_MFGR:
+        type: TEXT
+        description: P_MFGR field
+        nullable: false
+      P_BRAND:
+        type: TEXT
+        description: P_BRAND field
+        nullable: false
+      P_TYPE:
+        type: TEXT
+        description: P_TYPE field
+        nullable: false
+      P_SIZE:
+        type: NUMBER
+        description: P_SIZE field
+        nullable: false
+      P_CONTAINER:
+        type: TEXT
+        description: P_CONTAINER field
+        nullable: false
+      P_RETAILPRICE:
+        type: NUMBER
+        description: P_RETAILPRICE field
+        nullable: false
+      P_COMMENT:
+        type: TEXT
+        description: P_COMMENT field
+        nullable: true
+  PARTSUPP:
+    description: Contains supplier information for parts (price and availability)
+    fields:
+      PS_PARTKEY:
+        type: NUMBER
+        description: PS_PARTKEY field
+        nullable: false
+        is_key: true
+        foreign_key: PART.P_PARTKEY
+      PS_SUPPKEY:
+        type: NUMBER
+        description: PS_SUPPKEY field
+        nullable: false
+        is_key: true
+        foreign_key: SUPPLIER.S_SUPPKEY
+      PS_AVAILQTY:
+        type: NUMBER
+        description: PS_AVAILQTY field
+        nullable: false
+      PS_SUPPLYCOST:
+        type: NUMBER
+        description: PS_SUPPLYCOST field
+        nullable: false
+      PS_COMMENT:
+        type: TEXT
+        description: PS_COMMENT field
+        nullable: true
+    relationships:
+    - table: PART
+      type: many_to_one
+      join_fields:
+      - PS_PARTKEY
+      - P_PARTKEY
+    - table: SUPPLIER
+      type: many_to_one
+      join_fields:
+      - PS_SUPPKEY
+      - S_SUPPKEY
+  SUPPLIER:
+    description: Contains supplier information including contact details and location
+    fields:
+      S_SUPPKEY:
+        type: NUMBER
+        description: S_SUPPKEY field
+        nullable: false
+        is_key: true
+      S_NAME:
+        type: TEXT
+        description: S_NAME field
+        nullable: false
+      S_ADDRESS:
+        type: TEXT
+        description: S_ADDRESS field
+        nullable: false
+      S_NATIONKEY:
+        type: NUMBER
+        description: S_NATIONKEY field
+        nullable: false
+        foreign_key: NATION.N_NATIONKEY
+      S_PHONE:
+        type: TEXT
+        description: S_PHONE field
+        nullable: false
+      S_ACCTBAL:
+        type: NUMBER
+        description: S_ACCTBAL field
+        nullable: false
+      S_COMMENT:
+        type: TEXT
+        description: S_COMMENT field
+        nullable: true
+    relationships:
+    - table: NATION
+      type: many_to_one
+      join_fields:
+      - S_NATIONKEY
+      - N_NATIONKEY
+  REGION:
+    description: Contains information about geographical regions
+    fields:
+      R_REGIONKEY:
+        type: NUMBER
+        description: R_REGIONKEY field
+        nullable: false
+        is_key: true
+      R_NAME:
+        type: TEXT
+        description: R_NAME field
+        nullable: false
+      R_COMMENT:
+        type: TEXT
+        description: R_COMMENT field
+        nullable: true

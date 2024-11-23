@@ -13,16 +13,10 @@ import traceback
 load_dotenv(override=True)
 
 # Feature flags
-SHOW_SCHEMA_EDITOR = False  # Set to True to show schema editor in sidebar
+SHOW_SCHEMA_EDITOR = True  # Set to True to show schema editor in sidebar
 
 # Initialize schema manager
 schema_manager = SchemaManager()
-
-def is_snowflake_available():
-    """Check if Snowflake dependencies are installed."""
-    snowflake_connector = importlib.util.find_spec("snowflake.connector")
-    snowflake_sqlalchemy = importlib.util.find_spec("snowflake.sqlalchemy")
-    return snowflake_connector is not None and snowflake_sqlalchemy is not None
 
 def check_api_key():
     """Check if OpenAI API key is configured."""
@@ -30,16 +24,9 @@ def check_api_key():
     if not api_key:
         st.error("OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.")
         st.stop()
-    
-    if SHOW_SCHEMA_EDITOR:
-        # Debug information (will be removed in production)
-        st.sidebar.write("API Key Status:")
-        st.sidebar.write(f"Key found: {bool(api_key)}")
-        st.sidebar.write(f"Key length: {len(api_key) if api_key else 0}")
-        st.sidebar.write(f"Key prefix: {api_key[:7]}..." if api_key else "No key")
 
 def check_snowflake_config():
-    """Check Snowflake configuration if needed."""
+    """Check Snowflake configuration."""
     required_vars = [
         'SNOWFLAKE_ACCOUNT',
         'SNOWFLAKE_USER',
@@ -49,63 +36,29 @@ def check_snowflake_config():
         'SNOWFLAKE_SCHEMA'
     ]
     missing_vars = [var for var in required_vars if not os.getenv(var)]
-    return len(missing_vars) == 0, missing_vars
+    
+    if missing_vars:
+        st.error(f"Missing Snowflake configuration: {', '.join(missing_vars)}")
+        st.info("Please set these environment variables to use Snowflake.")
+        st.stop()
 
-def setup_database_config():
-    """Initial database setup and configuration."""
-    # Check Snowflake availability
-    snowflake_available = is_snowflake_available()
-    
-    # Database selection
-    db_options = ["sqlite"]
-    if snowflake_available:
-        db_options.append("snowflake")
-    
-    # Create columns for layout
-    col1, col2 = st.columns([2, 3])
-    
-    with col1:
-        db_type = st.selectbox(
-            "Select Data Source",
-            db_options,
-            help="Choose your database type"
-        )
-    
-    # Show Snowflake availability status
-    if not snowflake_available:
-        with col2:
-            st.info("Snowflake support is not available. Install snowflake-connector-python and snowflake-sqlalchemy to enable Snowflake queries.")
-    
-    # Check configuration based on database type
-    if db_type == "snowflake":
-        is_valid, missing_vars = check_snowflake_config()
-        if not is_valid:
-            st.error(f"Missing Snowflake configuration: {', '.join(missing_vars)}")
-            st.info("Please set these environment variables to use Snowflake.")
-            st.stop()
-    
-    return db_type
-
-def load_or_create_schema(db_type):
+def load_or_create_schema():
     """Load existing schema config or create new one."""
-    config = schema_manager.load_config(db_type)
+    config = schema_manager.load_config("snowflake")
     
     if not config:
         st.info("Generating schema configuration...")
         try:
-            if db_type == "sqlite":
-                config = inspect_database(db_type="sqlite", db_path="sample.db")
-            else:
-                config = inspect_database(
-                    db_type="snowflake",
-                    account=os.getenv('SNOWFLAKE_ACCOUNT'),
-                    user=os.getenv('SNOWFLAKE_USER'),
-                    password=os.getenv('SNOWFLAKE_PASSWORD'),
-                    database=os.getenv('SNOWFLAKE_DATABASE'),
-                    warehouse=os.getenv('SNOWFLAKE_WAREHOUSE'),
-                    schema=os.getenv('SNOWFLAKE_SCHEMA')
-                )
-            schema_manager.save_config(db_type, config)
+            config = inspect_database(
+                db_type="snowflake",
+                account=os.getenv('SNOWFLAKE_ACCOUNT'),
+                user=os.getenv('SNOWFLAKE_USER'),
+                password=os.getenv('SNOWFLAKE_PASSWORD'),
+                database=os.getenv('SNOWFLAKE_DATABASE'),
+                warehouse=os.getenv('SNOWFLAKE_WAREHOUSE'),
+                schema=os.getenv('SNOWFLAKE_SCHEMA')
+            )
+            schema_manager.save_config("snowflake", config)
             st.success("Schema configuration generated successfully!")
         except Exception as e:
             st.error(f"Error generating schema configuration: {str(e)}")
@@ -115,7 +68,7 @@ def load_or_create_schema(db_type):
     
     return config
 
-def schema_editor(db_type, config):
+def schema_editor(config):
     """Simple schema configuration editor."""
     with st.sidebar.expander("Edit Schema Configuration"):
         # Business Context
@@ -136,7 +89,7 @@ def schema_editor(db_type, config):
         
         if st.button("Update Business Context"):
             schema_manager.update_business_context(
-                db_type,
+                "snowflake",
                 description,
                 concepts_text.split('\n') if concepts_text else []
             )
@@ -146,7 +99,7 @@ def schema_editor(db_type, config):
         st.subheader("Table Descriptions")
         selected_table = st.selectbox(
             "Select Table",
-            schema_manager.get_tables(db_type)
+            schema_manager.get_tables("snowflake")
         )
         
         if selected_table:
@@ -157,14 +110,14 @@ def schema_editor(db_type, config):
             )
             
             if st.button(f"Update {selected_table} Description"):
-                schema_manager.update_table_description(db_type, selected_table, table_desc)
+                schema_manager.update_table_description("snowflake", selected_table, table_desc)
                 st.success(f"Updated description for {selected_table}!")
             
             # Field Descriptions
             st.subheader("Field Descriptions")
             selected_field = st.selectbox(
                 "Select Field",
-                schema_manager.get_fields(db_type, selected_table)
+                schema_manager.get_fields("snowflake", selected_table)
             )
             
             if selected_field:
@@ -176,7 +129,7 @@ def schema_editor(db_type, config):
                 
                 if st.button(f"Update {selected_field} Description"):
                     schema_manager.update_field_description(
-                        db_type, selected_table, selected_field, field_desc
+                        "snowflake", selected_table, selected_field, field_desc
                     )
                     st.success(f"Updated description for {selected_field}!")
 
@@ -186,15 +139,15 @@ def main():
     # Check OpenAI API key with detailed feedback
     check_api_key()
     
-    # Setup database configuration
-    db_type = setup_database_config()
+    # Check Snowflake configuration
+    check_snowflake_config()
     
     # Load or create schema configuration
-    config = load_or_create_schema(db_type)
+    config = load_or_create_schema()
     
     # Schema editor in sidebar (only if enabled)
     if SHOW_SCHEMA_EDITOR:
-        schema_editor(db_type, config)
+        schema_editor(config)
     
     # Main query interface
     st.header("Ask Questions About Your Data")
@@ -202,19 +155,19 @@ def main():
     with st.expander("Example Questions", expanded=False):
         st.markdown("""
            **Simple Questions:**
-            - What are our total sales by product category?
-            - How are different payment methods performing in terms of order value?
-            - Where are our customers located across states?
+            - How many customers do we have?
+            - What's the total value of all orders?
+            - Show me the distribution of orders by nation
 
             **Intermediate Questions:**
-            - Which states are generating the highest order values?
-            - Who are our most frequent buyers and what's their total spend?
-            - How do customers prefer to pay across different months?
+            - What's the average order value by region?
+            - Who are our top 10 customers by order value?
+            - Show order trends over time by region
 
             **Complex Questions:**
-            - How long does it take us to deliver different product categories?
-            - Break down our revenue by state and payment type
-            - How are our average order values trending over time?
+            - What's the average delivery time by product category?
+            - Show me customer order patterns across different regions
+            - Calculate market share by supplier within each region
            """)
     
     # Query input using chat_input
@@ -222,14 +175,14 @@ def main():
         try:
             with st.spinner("Generating query..."):
                 # Generate SQL query
-                sql_query = generate_dynamic_query(question, db_type=db_type)
+                sql_query = generate_dynamic_query(question)
                 
                 # Show the generated SQL
                 with st.expander("Generated SQL", expanded=True):
                     st.code(sql_query, language="sql")
                 
                 # Execute query and show results
-                results = execute_dynamic_query(sql_query, question, db_type=db_type)
+                results = execute_dynamic_query(sql_query, question)
                 
                 if isinstance(results, pd.DataFrame):
                     st.dataframe(results)

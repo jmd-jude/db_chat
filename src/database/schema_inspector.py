@@ -4,7 +4,7 @@ from datetime import datetime
 import sys
 import os
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from snowflake.sqlalchemy import URL
 
 def inspect_sqlite_database(db_path):
@@ -32,26 +32,7 @@ def inspect_sqlite_database(db_path):
                 'year': "strftime('%Y', {column})",
                 'month': "strftime('%Y-%m', {column})",
                 'date': "strftime('%Y-%m-%d', {column})"
-            },
-            'date_formats': {
-                'literal': 'YYYY-MM-DD',
-                'year': 'YYYY',
-                'month': 'YYYY-MM'
-            },
-            'example_patterns': [
-                {
-                    'description': 'Monthly aggregation',
-                    'pattern': "strftime('%Y-%m', {column}) AS {alias}"
-                },
-                {
-                    'description': 'Year comparison',
-                    'pattern': "strftime('%Y', {column}) = '{year}'"
-                },
-                {
-                    'description': 'Date range',
-                    'pattern': "{column} BETWEEN '{start_date}' AND '{end_date}'"
-                }
-            ]
+            }
         },
         'tables': {}
     }
@@ -108,16 +89,17 @@ def inspect_sqlite_database(db_path):
     conn.close()
     return schema_config
 
-def inspect_snowflake_database(conn):
+def inspect_snowflake_database(engine):
     """
     Inspect a Snowflake database and generate a schema configuration.
     """
     schema_config = {
         'business_context': {
-            'description': 'Auto-generated schema configuration for Snowflake database',
+            'description': 'Auto-generated schema configuration for Snowflake TPC-H sample data',
             'key_concepts': [
-                'Generated from Snowflake database inspection',
-                'Please update with business-specific concepts'
+                'TPC-H is a decision support benchmark',
+                'Consists of a suite of business-oriented ad-hoc queries',
+                'Models a wholesale supplier managing sales orders'
             ]
         },
         'database_config': {
@@ -126,119 +108,156 @@ def inspect_snowflake_database(conn):
                 'year': "DATE_PART('YEAR', {column})",
                 'month': "DATE_TRUNC('MONTH', {column})",
                 'date': "DATE_TRUNC('DAY', {column})"
-            },
-            'date_formats': {
-                'literal': 'YYYY-MM-DD',
-                'year': 'YYYY',
-                'month': 'YYYY-MM'
-            },
-            'example_patterns': [
-                {
-                    'description': 'Monthly aggregation',
-                    'pattern': "DATE_TRUNC('MONTH', {column}) AS {alias}"
-                },
-                {
-                    'description': 'Year comparison',
-                    'pattern': "DATE_PART('YEAR', {column}) = {year}"
-                },
-                {
-                    'description': 'Date range',
-                    'pattern': "{column} BETWEEN '{start_date}' AND '{end_date}'"
-                }
-            ]
+            }
         },
         'tables': {}
     }
     
-    # Get tables
-    tables_query = """
-    SELECT TABLE_NAME
-    FROM INFORMATION_SCHEMA.TABLES
-    WHERE TABLE_SCHEMA = CURRENT_SCHEMA()
-    AND TABLE_TYPE = 'BASE TABLE'
-    """
-    tables = pd.read_sql(tables_query, conn)
-    
-    # Inspect each table
-    for table_name in tables['TABLE_NAME']:
-        # Get column info
-        columns_query = f"""
-        SELECT 
-            COLUMN_NAME,
-            DATA_TYPE,
-            IS_NULLABLE,
-            COLUMN_DEFAULT,
-            ORDINAL_POSITION,
-            CHARACTER_MAXIMUM_LENGTH,
-            NUMERIC_PRECISION,
-            NUMERIC_SCALE
-        FROM INFORMATION_SCHEMA.COLUMNS
-        WHERE TABLE_NAME = '{table_name}'
-        ORDER BY ORDINAL_POSITION
-        """
-        columns = pd.read_sql(columns_query, conn)
+    with engine.connect() as conn:
+        # Get tables using SQLAlchemy text()
+        tables_query = text("""
+        SELECT TABLE_NAME
+        FROM INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_SCHEMA = CURRENT_SCHEMA()
+        AND TABLE_TYPE = 'BASE TABLE'
+        """)
+        result = conn.execute(tables_query)
+        tables = [row[0] for row in result]
         
-        # Get primary keys
-        pk_query = f"""
-        SELECT COLUMN_NAME
-        FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-        WHERE TABLE_NAME = '{table_name}'
-        AND CONSTRAINT_NAME LIKE 'PK_%'
-        """
-        primary_keys = pd.read_sql(pk_query, conn)
-        
-        # Get foreign keys
-        fk_query = f"""
-        SELECT 
-            CONSTRAINT_NAME,
-            COLUMN_NAME,
-            REFERENCED_TABLE_NAME,
-            REFERENCED_COLUMN_NAME
-        FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-        WHERE TABLE_NAME = '{table_name}'
-        AND CONSTRAINT_NAME LIKE 'FK_%'
-        """
-        foreign_keys = pd.read_sql(fk_query, conn)
-        
-        table_info = {
-            'description': f'Table containing {table_name} data',
-            'fields': {}
+        # Known TPC-H relationships
+        tpch_relationships = {
+            'ORDERS': [
+                {'table': 'CUSTOMER', 'key': 'O_CUSTKEY', 'ref_key': 'C_CUSTKEY'},
+            ],
+            'LINEITEM': [
+                {'table': 'ORDERS', 'key': 'L_ORDERKEY', 'ref_key': 'O_ORDERKEY'},
+                {'table': 'PART', 'key': 'L_PARTKEY', 'ref_key': 'P_PARTKEY'},
+                {'table': 'SUPPLIER', 'key': 'L_SUPPKEY', 'ref_key': 'S_SUPPKEY'},
+            ],
+            'PARTSUPP': [
+                {'table': 'PART', 'key': 'PS_PARTKEY', 'ref_key': 'P_PARTKEY'},
+                {'table': 'SUPPLIER', 'key': 'PS_SUPPKEY', 'ref_key': 'S_SUPPKEY'},
+            ],
+            'SUPPLIER': [
+                {'table': 'NATION', 'key': 'S_NATIONKEY', 'ref_key': 'N_NATIONKEY'},
+            ],
+            'CUSTOMER': [
+                {'table': 'NATION', 'key': 'C_NATIONKEY', 'ref_key': 'N_NATIONKEY'},
+            ],
+            'NATION': [
+                {'table': 'REGION', 'key': 'N_REGIONKEY', 'ref_key': 'R_REGIONKEY'},
+            ]
         }
         
-        # Process columns
-        for _, col in columns.iterrows():
-            field_info = {
-                'type': col['DATA_TYPE'].upper(),
-                'description': f'{col["COLUMN_NAME"]} field',
-                'nullable': col['IS_NULLABLE'] == 'YES'
+        # Known TPC-H primary keys
+        tpch_primary_keys = {
+            'CUSTOMER': ['C_CUSTKEY'],
+            'LINEITEM': ['L_ORDERKEY', 'L_LINENUMBER'],
+            'NATION': ['N_NATIONKEY'],
+            'ORDERS': ['O_ORDERKEY'],
+            'PART': ['P_PARTKEY'],
+            'PARTSUPP': ['PS_PARTKEY', 'PS_SUPPKEY'],
+            'REGION': ['R_REGIONKEY'],
+            'SUPPLIER': ['S_SUPPKEY']
+        }
+        
+        # Inspect each table
+        for table_name in tables:
+            # Get column info
+            columns_query = text(f"""
+            SELECT 
+                COLUMN_NAME,
+                DATA_TYPE,
+                IS_NULLABLE,
+                COLUMN_DEFAULT,
+                CHARACTER_MAXIMUM_LENGTH,
+                NUMERIC_PRECISION,
+                NUMERIC_SCALE
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = '{table_name}'
+            ORDER BY ORDINAL_POSITION
+            """)
+            columns = conn.execute(columns_query)
+            
+            table_info = {
+                'description': get_tpch_table_description(table_name),
+                'fields': {}
             }
             
-            # Add primary key info
-            if not primary_keys.empty and col['COLUMN_NAME'] in primary_keys['COLUMN_NAME'].values:
-                field_info['is_key'] = True
-            
-            # Add foreign key info
-            if not foreign_keys.empty:
-                fk_info = foreign_keys[foreign_keys['COLUMN_NAME'] == col['COLUMN_NAME']]
-                if not fk_info.empty:
-                    field_info['foreign_key'] = f"{fk_info['REFERENCED_TABLE_NAME'].iloc[0]}.{fk_info['REFERENCED_COLUMN_NAME'].iloc[0]}"
-            
-            table_info['fields'][col['COLUMN_NAME']] = field_info
-        
-        # Add relationships based on foreign keys
-        if not foreign_keys.empty:
-            table_info['relationships'] = []
-            for _, fk in foreign_keys.iterrows():
-                relationship = {
-                    'table': fk['REFERENCED_TABLE_NAME'],
-                    'type': 'many_to_one',
-                    'join_fields': [fk['COLUMN_NAME'], fk['REFERENCED_COLUMN_NAME']]
+            # Process columns
+            for col in columns:
+                # Access columns by index since we're using SQLAlchemy's Result object
+                field_info = {
+                    'type': col[1].upper(),  # DATA_TYPE is at index 1
+                    'description': get_tpch_column_description(table_name, col[0]),  # COLUMN_NAME is at index 0
+                    'nullable': col[2] == 'YES'  # IS_NULLABLE is at index 2
                 }
-                table_info['relationships'].append(relationship)
-        
-        schema_config['tables'][table_name] = table_info
+                
+                # Add primary key info from TPC-H schema
+                if table_name in tpch_primary_keys and col[0] in tpch_primary_keys[table_name]:
+                    field_info['is_key'] = True
+                
+                table_info['fields'][col[0]] = field_info
+            
+            # Add relationships based on TPC-H schema
+            if table_name in tpch_relationships:
+                table_info['relationships'] = []
+                for rel in tpch_relationships[table_name]:
+                    relationship = {
+                        'table': rel['table'],
+                        'type': 'many_to_one',
+                        'join_fields': [rel['key'], rel['ref_key']]
+                    }
+                    # Add foreign key info to the field
+                    if rel['key'] in table_info['fields']:
+                        table_info['fields'][rel['key']]['foreign_key'] = f"{rel['table']}.{rel['ref_key']}"
+                    table_info['relationships'].append(relationship)
+            
+            schema_config['tables'][table_name] = table_info
     
     return schema_config
+
+def get_tpch_table_description(table_name):
+    """Get description for TPC-H tables."""
+    descriptions = {
+        'CUSTOMER': 'Contains customer information including demographics and market segments',
+        'LINEITEM': 'Contains the line items of all orders, representing the sales details of each transaction',
+        'NATION': 'Contains information about nations/countries',
+        'ORDERS': 'Contains all orders made by customers',
+        'PART': 'Contains information about parts/products available for sale',
+        'PARTSUPP': 'Contains supplier information for parts (price and availability)',
+        'REGION': 'Contains information about geographical regions',
+        'SUPPLIER': 'Contains supplier information including contact details and location'
+    }
+    return descriptions.get(table_name, f'Table containing {table_name} data')
+
+def get_tpch_column_description(table_name, column_name):
+    """Get description for TPC-H columns."""
+    descriptions = {
+        'CUSTOMER': {
+            'C_CUSTKEY': 'Unique identifier for the customer',
+            'C_NAME': 'Customer name',
+            'C_ADDRESS': 'Customer address',
+            'C_NATIONKEY': 'Reference to the nation where the customer is located',
+            'C_PHONE': 'Customer phone number',
+            'C_ACCTBAL': 'Customer account balance',
+            'C_MKTSEGMENT': 'Market segment to which the customer belongs',
+            'C_COMMENT': 'Additional comments about the customer'
+        },
+        'ORDERS': {
+            'O_ORDERKEY': 'Unique identifier for the order',
+            'O_CUSTKEY': 'Reference to the customer who placed the order',
+            'O_ORDERSTATUS': 'Current status of the order',
+            'O_TOTALPRICE': 'Total price of the order',
+            'O_ORDERDATE': 'Date when the order was placed',
+            'O_ORDERPRIORITY': 'Priority level of the order',
+            'O_CLERK': 'Clerk who processed the order',
+            'O_SHIPPRIORITY': 'Shipping priority of the order',
+            'O_COMMENT': 'Additional comments about the order'
+        }
+        # Add more table/column descriptions as needed
+    }
+    return descriptions.get(table_name, {}).get(column_name, f'{column_name} field')
 
 def save_schema_config(config, output_path):
     """Save the schema configuration to a YAML file."""
@@ -270,8 +289,7 @@ def inspect_database(db_type="sqlite", **connection_params):
             schema=connection_params['schema']
         ))
         
-        with engine.connect() as conn:
-            return inspect_snowflake_database(conn)
+        return inspect_snowflake_database(engine)
     
     else:
         raise ValueError(f"Unsupported database type: {db_type}")

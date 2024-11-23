@@ -1,0 +1,328 @@
+2024-11-23 14:35:54,870 - API Key found: True
+2024-11-23 14:35:54,870 - API Key length: 164
+2024-11-23 14:35:54,871 - API Key prefix: sk-proj...
+2024-11-23 14:35:56,051 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 14:35:56,076 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-14.7.1-arm64-arm-64bit-Mach-O
+2024-11-23 14:35:56,076 - Connecting to GLOBAL Snowflake domain
+2024-11-23 14:35:56,076 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-23 14:35:56,637 - Number of results in first chunk: 1
+2024-11-23 14:35:56,736 - Number of results in first chunk: 1
+2024-11-23 14:35:56,741 - {
+  "timestamp": "2024-11-23T14:35:56.740967",
+  "thread_id": "default",
+  "question": "How many customers do we have?",
+  "query": "SELECT count(DISTINCT cust.customer_id) AS total_customers\nFROM dim_customers cust;",
+  "result": "Error executing query: 'Connection' object has no attribute 'cursor'"
+}
+2024-11-23 14:35:56,830 - Number of results in first chunk: 1
+2024-11-23 14:39:02,363 - closed
+2024-11-23 14:39:02,365 - No async queries seem to be running, deleting session
+2024-11-23 14:46:42,396 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-14.7.1-arm64-arm-64bit-Mach-O
+2024-11-23 14:46:42,396 - Connecting to GLOBAL Snowflake domain
+2024-11-23 14:46:42,396 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-23 14:46:43,105 - Number of results in first chunk: 1
+2024-11-23 14:46:43,193 - Number of results in first chunk: 1
+2024-11-23 14:46:44,091 - Number of results in first chunk: 8
+2024-11-23 14:46:44,875 - Number of results in first chunk: 68
+2024-11-23 14:46:45,034 - Number of results in first chunk: 1
+2024-11-23 14:46:45,107 - Number of results in first chunk: 1
+2024-11-23 14:50:30,984 - closed
+2024-11-23 14:50:30,984 - No async queries seem to be running, deleting session
+2024-11-23 14:57:03,922 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-14.7.1-arm64-arm-64bit-Mach-O
+2024-11-23 14:57:03,923 - Connecting to GLOBAL Snowflake domain
+2024-11-23 14:57:03,923 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-23 14:57:04,428 - Number of results in first chunk: 1
+2024-11-23 14:57:04,586 - Number of results in first chunk: 1
+2024-11-23 14:57:05,395 - Number of results in first chunk: 8
+2024-11-23 14:57:06,343 - Number of results in first chunk: 68
+2024-11-23 14:57:06,432 - Number of results in first chunk: 1
+2024-11-23 15:03:52,328 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-14.7.1-arm64-arm-64bit-Mach-O
+2024-11-23 15:03:52,328 - Connecting to GLOBAL Snowflake domain
+2024-11-23 15:03:52,329 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-23 15:03:52,796 - Number of results in first chunk: 1
+2024-11-23 15:03:52,881 - Number of results in first chunk: 1
+2024-11-23 15:03:53,616 - Number of results in first chunk: 8
+2024-11-23 15:03:54,541 - Number of results in first chunk: 68
+2024-11-23 15:03:55,546 - Number of results in first chunk: 64
+2024-11-23 15:03:56,508 - Number of results in first chunk: 16
+2024-11-23 15:03:57,532 - Number of results in first chunk: 36
+2024-11-23 15:03:58,291 - Number of results in first chunk: 36
+2024-11-23 15:03:59,055 - Number of results in first chunk: 20
+2024-11-23 15:03:59,783 - Number of results in first chunk: 28
+2024-11-23 15:04:00,571 - Number of results in first chunk: 12
+2024-11-23 15:04:00,649 - Number of results in first chunk: 1
+2024-11-23 15:04:34,104 - API Key found: True
+2024-11-23 15:04:34,106 - API Key length: 164
+2024-11-23 15:04:34,106 - API Key prefix: sk-proj...
+2024-11-23 15:04:35,085 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 15:04:35,108 - {
+  "timestamp": "2024-11-23T15:04:35.108441",
+  "thread_id": "default",
+  "question": "how many customers do we have?",
+  "query": "SELECT count(c.c_custkey) AS total_customers\nFROM customer c;",
+  "result": "Error executing query: Query must be a string unless using sqlalchemy."
+}
+2024-11-23 15:12:53,746 - closed
+2024-11-23 15:12:53,747 - No async queries seem to be running, deleting session
+2024-11-23 15:13:23,661 - API Key found: True
+2024-11-23 15:13:23,662 - API Key length: 164
+2024-11-23 15:13:23,662 - API Key prefix: sk-proj...
+2024-11-23 15:13:24,327 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 15:13:24,346 - {
+  "timestamp": "2024-11-23T15:13:24.346636",
+  "thread_id": "default",
+  "question": "How many customers do we have?",
+  "query": "SELECT count(c.c_custkey) AS total_customers\nFROM customer c;",
+  "result": "Error executing query: isinstance() arg 2 must be a type, a tuple of types, or a union"
+}
+2024-11-23 15:33:55,895 - API Key found: True
+2024-11-23 15:33:55,897 - API Key length: 164
+2024-11-23 15:33:55,897 - API Key prefix: sk-proj...
+2024-11-23 15:33:56,725 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 15:33:56,756 - {
+  "timestamp": "2024-11-23T15:33:56.756032",
+  "thread_id": "default",
+  "question": "how many customers do we have?",
+  "query": "SELECT count(c.id) AS total_customers\nFROM customers c;",
+  "result": "Error executing query: Query must be a string unless using sqlalchemy."
+}
+2024-11-23 15:51:20,085 - API Key found: True
+2024-11-23 15:51:20,085 - API Key length: 164
+2024-11-23 15:51:20,085 - API Key prefix: sk-proj...
+2024-11-23 15:51:20,921 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 15:51:20,951 - {
+  "timestamp": "2024-11-23T15:51:20.951788",
+  "thread_id": "default",
+  "question": "how many customers do we have?",
+  "query": "SELECT count(c.id) AS total_customers\nFROM customers c;",
+  "result": "Error executing query: 'Engine' object has no attribute 'cursor'"
+}
+2024-11-23 15:51:58,457 - API Key found: True
+2024-11-23 15:51:58,457 - API Key length: 164
+2024-11-23 15:51:58,457 - API Key prefix: sk-proj...
+2024-11-23 15:51:59,120 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 15:51:59,123 - Error generating query: Invalid value for identifier_case: 'preserve'
+2024-11-23 15:55:07,979 - API Key found: True
+2024-11-23 15:55:07,979 - API Key length: 164
+2024-11-23 15:55:07,979 - API Key prefix: sk-proj...
+2024-11-23 15:55:08,523 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 15:55:08,554 - {
+  "timestamp": "2024-11-23T15:55:08.554661",
+  "thread_id": "default",
+  "question": "how many customers do I have?",
+  "query": "SELECT count(c.id) AS total_customers\nFROM customers c;",
+  "result": "Error executing query: 'Connection' object has no attribute 'cursor'"
+}
+2024-11-23 15:55:49,183 - API Key found: True
+2024-11-23 15:55:49,183 - API Key length: 164
+2024-11-23 15:55:49,184 - API Key prefix: sk-proj...
+2024-11-23 15:55:49,780 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 15:55:49,802 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-14.7.1-arm64-arm-64bit-Mach-O
+2024-11-23 15:55:49,802 - Connecting to GLOBAL Snowflake domain
+2024-11-23 15:55:49,802 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-23 15:55:50,747 - Number of results in first chunk: 1
+2024-11-23 15:55:50,872 - Number of results in first chunk: 1
+2024-11-23 15:55:50,873 - {
+  "timestamp": "2024-11-23T15:55:50.873699",
+  "thread_id": "default",
+  "question": "how many customers do I have?",
+  "query": "SELECT COUNT(C.C_CUSTKEY) AS TOTAL_CUSTOMERS\nFROM CUSTOMER C;",
+  "result": "Error executing query: 'Connection' object has no attribute 'cursor'"
+}
+2024-11-23 15:55:51,031 - Number of results in first chunk: 1
+2024-11-23 15:55:51,032 - closed
+2024-11-23 15:55:51,090 - No async queries seem to be running, deleting session
+2024-11-23 15:59:18,129 - API Key found: True
+2024-11-23 15:59:18,130 - API Key length: 164
+2024-11-23 15:59:18,130 - API Key prefix: sk-proj...
+2024-11-23 15:59:18,699 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 15:59:18,731 - {
+  "timestamp": "2024-11-23T15:59:18.731374",
+  "thread_id": "default",
+  "question": "how many customers do I have?",
+  "query": "SELECT count(c.id) AS total_customers\nFROM customers c;",
+  "result": "Error executing query: Query must be a string unless using sqlalchemy."
+}
+2024-11-23 16:00:13,390 - API Key found: True
+2024-11-23 16:00:13,391 - API Key length: 164
+2024-11-23 16:00:13,391 - API Key prefix: sk-proj...
+2024-11-23 16:00:14,002 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 16:00:14,027 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-14.7.1-arm64-arm-64bit-Mach-O
+2024-11-23 16:00:14,027 - Connecting to GLOBAL Snowflake domain
+2024-11-23 16:00:14,027 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-23 16:00:14,725 - Number of results in first chunk: 1
+2024-11-23 16:00:14,842 - Number of results in first chunk: 1
+2024-11-23 16:00:14,932 - Number of results in first chunk: 1
+2024-11-23 16:00:14,932 - {
+  "timestamp": "2024-11-23T16:00:14.932678",
+  "thread_id": "default",
+  "question": "how many customers do I have?",
+  "query": "SELECT COUNT(C.C_CUSTKEY) AS TOTAL_CUSTOMERS\nFROM CUSTOMER C;",
+  "result": "Error executing query: Query must be a string unless using sqlalchemy."
+}
+2024-11-23 16:00:14,932 - closed
+2024-11-23 16:00:14,987 - No async queries seem to be running, deleting session
+2024-11-23 16:12:02,327 - API Key found: True
+2024-11-23 16:12:02,329 - API Key length: 164
+2024-11-23 16:12:02,329 - API Key prefix: sk-proj...
+2024-11-23 16:12:03,119 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 16:12:03,148 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-14.7.1-arm64-arm-64bit-Mach-O
+2024-11-23 16:12:03,149 - Connecting to GLOBAL Snowflake domain
+2024-11-23 16:12:03,150 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-23 16:12:03,663 - Number of results in first chunk: 1
+2024-11-23 16:12:03,741 - Number of results in first chunk: 1
+2024-11-23 16:12:03,842 - Number of results in first chunk: 1
+2024-11-23 16:12:03,843 - {
+  "timestamp": "2024-11-23T16:12:03.843227",
+  "thread_id": "default",
+  "question": "How many customers do we have?",
+  "query": "SELECT COUNT(C.C_CUSTKEY) AS TOTAL_CUSTOMERS\nFROM CUSTOMER C;",
+  "result": "Error executing query: Query must be a string unless using sqlalchemy."
+}
+2024-11-23 16:12:03,843 - closed
+2024-11-23 16:12:03,887 - No async queries seem to be running, deleting session
+2024-11-23 16:15:08,648 - API Key found: True
+2024-11-23 16:15:08,649 - API Key length: 164
+2024-11-23 16:15:08,649 - API Key prefix: sk-proj...
+2024-11-23 16:15:09,502 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 16:15:09,511 - {
+  "timestamp": "2024-11-23T16:15:09.511149",
+  "thread_id": "default",
+  "question": "How many customers do we have?",
+  "query": "SELECT COUNT(C.C_CUSTKEY) AS TOTAL_CUSTOMERS\nFROM CUSTOMER C;",
+  "result": "Error executing query: 'Engine' object has no attribute 'cursor'"
+}
+2024-11-23 16:15:59,801 - API Key found: True
+2024-11-23 16:15:59,802 - API Key length: 164
+2024-11-23 16:15:59,802 - API Key prefix: sk-proj...
+2024-11-23 16:16:00,685 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 16:16:00,693 - {
+  "timestamp": "2024-11-23T16:16:00.693251",
+  "thread_id": "default",
+  "question": "How many customers do we have in each country?",
+  "query": "SELECT N.N_NAME AS COUNTRY,\n       COUNT(C.C_CUSTKEY) AS TOTAL_CUSTOMERS\nFROM CUSTOMER C\nJOIN NATION N ON C.C_NATIONKEY = N.N_NATIONKEY\nGROUP BY N.N_NAME;",
+  "result": "Error executing query: 'Engine' object has no attribute 'cursor'"
+}
+2024-11-23 16:16:46,597 - API Key found: True
+2024-11-23 16:16:46,597 - API Key length: 164
+2024-11-23 16:16:46,597 - API Key prefix: sk-proj...
+2024-11-23 16:16:47,887 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 16:16:47,892 - {
+  "timestamp": "2024-11-23T16:16:47.892834",
+  "thread_id": "default",
+  "question": "How many customers do we have in each region of each country?",
+  "query": "SELECT R.R_NAME AS REGION,\n       N.N_NAME AS COUNTRY,\n       COUNT(C.C_CUSTKEY) AS TOTAL_CUSTOMERS\nFROM CUSTOMER C\nJOIN NATION N ON C.C_NATIONKEY = N.N_NATIONKEY\nJOIN REGION R ON N.N_REGIONKEY = R.R_REGIONKEY\nGROUP BY R.R_NAME,\n         N.N_NAME;",
+  "result": "Error executing query: 'Engine' object has no attribute 'cursor'"
+}
+2024-11-23 16:19:01,657 - API Key found: True
+2024-11-23 16:19:01,658 - API Key length: 164
+2024-11-23 16:19:01,658 - API Key prefix: sk-proj...
+2024-11-23 16:19:02,341 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 16:19:02,349 - {
+  "timestamp": "2024-11-23T16:19:02.349592",
+  "thread_id": "default",
+  "question": "How many customers do we have?",
+  "query": "SELECT COUNT(C.C_CUSTKEY) AS TOTAL_CUSTOMERS\nFROM CUSTOMER C;",
+  "result": "Error executing query: 'Engine' object has no attribute 'cursor'"
+}
+2024-11-23 16:19:12,635 - API Key found: True
+2024-11-23 16:19:12,635 - API Key length: 164
+2024-11-23 16:19:12,635 - API Key prefix: sk-proj...
+2024-11-23 16:19:13,508 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 16:19:13,516 - {
+  "timestamp": "2024-11-23T16:19:13.516849",
+  "thread_id": "default",
+  "question": "How many customers do we have in each country?",
+  "query": "SELECT N.N_NAME AS COUNTRY,\n       COUNT(C.C_CUSTKEY) AS TOTAL_CUSTOMERS\nFROM CUSTOMER C\nJOIN NATION N ON C.C_NATIONKEY = N.N_NATIONKEY\nGROUP BY N.N_NAME;",
+  "result": "Error executing query: 'Engine' object has no attribute 'cursor'"
+}
+2024-11-23 16:19:24,883 - API Key found: True
+2024-11-23 16:19:24,884 - API Key length: 164
+2024-11-23 16:19:24,884 - API Key prefix: sk-proj...
+2024-11-23 16:19:26,096 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 16:19:26,103 - {
+  "timestamp": "2024-11-23T16:19:26.103926",
+  "thread_id": "default",
+  "question": "how many customers do we have in each region of each country?",
+  "query": "SELECT R.R_NAME AS REGION,\n       N.N_NAME AS COUNTRY,\n       COUNT(C.C_CUSTKEY) AS TOTAL_CUSTOMERS\nFROM CUSTOMER C\nJOIN NATION N ON C.C_NATIONKEY = N.N_NATIONKEY\nJOIN REGION R ON N.N_REGIONKEY = R.R_REGIONKEY\nGROUP BY R.R_NAME,\n         N.N_NAME;",
+  "result": "Error executing query: 'Engine' object has no attribute 'cursor'"
+}
+2024-11-23 16:26:01,168 - API Key found: True
+2024-11-23 16:26:01,169 - API Key length: 164
+2024-11-23 16:26:01,169 - API Key prefix: sk-proj...
+2024-11-23 16:26:01,935 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 16:26:01,966 - {
+  "timestamp": "2024-11-23T16:26:01.966620",
+  "thread_id": "default",
+  "question": "How many customers do we have?",
+  "query": "SELECT COUNT(C.C_CUSTKEY) AS TOTAL_CUSTOMERS\nFROM CUSTOMER C;",
+  "result": "Error executing query: 'Engine' object has no attribute 'cursor'"
+}
+2024-11-23 16:29:11,727 - API Key found: True
+2024-11-23 16:29:11,728 - API Key length: 164
+2024-11-23 16:29:11,728 - API Key prefix: sk-proj...
+2024-11-23 16:29:12,436 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 16:29:12,438 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-14.7.1-arm64-arm-64bit-Mach-O
+2024-11-23 16:29:12,439 - Connecting to GLOBAL Snowflake domain
+2024-11-23 16:29:12,439 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-23 16:29:12,989 - Number of results in first chunk: 1
+2024-11-23 16:29:13,005 - {
+  "timestamp": "2024-11-23T16:29:12.996302",
+  "thread_id": "default",
+  "question": "how many customers do we have?",
+  "query": "SELECT COUNT(C.C_CUSTKEY) AS TOTAL_CUSTOMERS\nFROM CUSTOMER C;",
+  "result": "   TOTAL_CUSTOMERS\n0           150000"
+}
+2024-11-23 16:29:13,005 - closed
+2024-11-23 16:29:13,046 - No async queries seem to be running, deleting session
+2024-11-23 16:29:39,688 - API Key found: True
+2024-11-23 16:29:39,688 - API Key length: 164
+2024-11-23 16:29:39,688 - API Key prefix: sk-proj...
+2024-11-23 16:29:41,114 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 16:29:41,122 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-14.7.1-arm64-arm-64bit-Mach-O
+2024-11-23 16:29:41,123 - Connecting to GLOBAL Snowflake domain
+2024-11-23 16:29:41,123 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-23 16:29:42,398 - Number of results in first chunk: 25
+2024-11-23 16:29:42,404 - {
+  "timestamp": "2024-11-23T16:29:42.400098",
+  "thread_id": "default",
+  "question": "How many customers do we have in each country?",
+  "query": "SELECT N.N_NAME AS COUNTRY,\n       COUNT(C.C_CUSTKEY) AS TOTAL_CUSTOMERS\nFROM CUSTOMER C\nJOIN NATION N ON C.C_NATIONKEY = N.N_NATIONKEY\nGROUP BY N.N_NAME;",
+  "result": "           COUNTRY  TOTAL_CUSTOMERS\n0             IRAN             6009\n1        INDONESIA             6161\n2            INDIA             6042\n3   UNITED KINGDOM             6011\n4    UNITED STATES             5983\n5             PERU             5975\n6            CHINA             6024\n7           JORDAN             6033\n8            EGYPT             5995\n9          ROMANIA             6100\n10          CANADA             6020\n11         GERMANY             5908\n12           KENYA             5992\n13       ARGENTINA             5975\n14          FRANCE             6100\n15          RUSSIA             6078\n16      MOZAMBIQUE             5974\n17         MOROCCO             5921\n18    SAUDI ARABIA             5904\n19          BRAZIL             5999\n20           JAPAN             5948\n21         ALGERIA             5925\n22         VIETNAM             6008\n23        ETHIOPIA             5952\n24            IRAQ             5963"
+}
+2024-11-23 16:29:42,404 - closed
+2024-11-23 16:29:42,447 - No async queries seem to be running, deleting session
+2024-11-23 16:30:14,465 - API Key found: True
+2024-11-23 16:30:14,466 - API Key length: 164
+2024-11-23 16:30:14,467 - API Key prefix: sk-proj...
+2024-11-23 16:30:16,049 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 16:30:16,060 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-14.7.1-arm64-arm-64bit-Mach-O
+2024-11-23 16:30:16,061 - Connecting to GLOBAL Snowflake domain
+2024-11-23 16:30:16,061 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-23 16:30:17,866 - Number of results in first chunk: 5
+2024-11-23 16:30:17,871 - {
+  "timestamp": "2024-11-23T16:30:17.868571",
+  "thread_id": "default",
+  "question": "What are the top 5 customers in the 5 countries with the highest sales?",
+  "query": "SELECT N.N_NAME AS COUNTRY,\n       C.C_NAME AS CUSTOMER_NAME,\n       SUM(L.L_EXTENDEDPRICE) AS TOTAL_SALES\nFROM CUSTOMER C\nJOIN ORDERS O ON C.C_CUSTKEY = O.O_CUSTKEY\nJOIN LINEITEM L ON O.O_ORDERKEY = L.L_ORDERKEY\nJOIN NATION N ON C.C_NATIONKEY = N.N_NATIONKEY\nGROUP BY N.N_NAME,\n         C.C_NAME\nORDER BY TOTAL_SALES DESC\nLIMIT 5;",
+  "result": "   COUNTRY       CUSTOMER_NAME TOTAL_SALES\n0     IRAN  Customer#000143500  7154828.98\n1   BRAZIL  Customer#000095257  6645071.02\n2    KENYA  Customer#000087115  6528332.52\n3  ALGERIA  Customer#000134380  6405556.97\n4     IRAQ  Customer#000103834  6397480.12"
+}
+2024-11-23 16:30:17,871 - closed
+2024-11-23 16:30:17,917 - No async queries seem to be running, deleting session
+2024-11-23 16:30:50,145 - API Key found: True
+2024-11-23 16:30:50,146 - API Key length: 164
+2024-11-23 16:30:50,147 - API Key prefix: sk-proj...
+2024-11-23 16:30:51,862 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-23 16:30:51,870 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-14.7.1-arm64-arm-64bit-Mach-O
+2024-11-23 16:30:51,871 - Connecting to GLOBAL Snowflake domain
+2024-11-23 16:30:51,871 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-23 16:30:53,533 - Number of results in first chunk: 2438
+2024-11-23 16:30:54,621 - {
+  "timestamp": "2024-11-23T16:30:54.617689",
+  "thread_id": "default",
+  "question": "Can you give me the top 5 customers from each of those countries?",
+  "query": "SELECT N.N_NAME AS COUNTRY,\n       C.C_NAME AS CUSTOMER_NAME,\n       SUM(L.L_EXTENDEDPRICE) AS TOTAL_SALES\nFROM CUSTOMER C\nJOIN ORDERS O ON C.C_CUSTKEY = O.O_CUSTKEY\nJOIN LINEITEM L ON O.O_ORDERKEY = L.L_ORDERKEY\nJOIN NATION N ON C.C_NATIONKEY = N.N_NATIONKEY\nWHERE N.N_NAME IN ('IRAN',\n                   'BRAZIL',\n                   'KENYA',\n                   'ALGERIA',\n                   'IRAQ')\nGROUP BY N.N_NAME,\n         C.C_NAME\nORDER BY N.N_NAME,\n         TOTAL_SALES DESC;",
+  "result": "       COUNTRY       CUSTOMER_NAME TOTAL_SALES\n0      ALGERIA  Customer#000134380  6405556.97\n1      ALGERIA  Customer#000145270  5974846.15\n2      ALGERIA  Customer#000026023  5776675.12\n3      ALGERIA  Customer#000028519  5651138.71\n4      ALGERIA  Customer#000037825  5547775.34\n...        ...                 ...         ...\n19876    KENYA  Customer#000077513   260450.63\n19877    KENYA  Customer#000072386   237968.99\n19878    KENYA  Customer#000068243   236567.02\n19879    KENYA  Customer#000056801   208225.45\n19880    KENYA  Customer#000026618   183150.14\n\n[19881 rows x 3 columns]"
+}
+2024-11-23 16:30:54,621 - closed
+2024-11-23 16:30:54,668 - No async queries seem to be running, deleting session
