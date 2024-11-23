@@ -13,3 +13,4 @@ __pycache__/
 **/secrets.toml
 *.toml
 README2.md
+info.md
