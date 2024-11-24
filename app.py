@@ -1,4 +1,7 @@
 import streamlit as st
+# Must be the first Streamlit command
+st.set_page_config(initial_sidebar_state="collapsed")
+
 import os
 from dotenv import load_dotenv
 import yaml
@@ -7,6 +10,8 @@ import importlib.util
 import traceback
 import sys
 from pathlib import Path
+import glob
+from datetime import datetime
 
 # Add the project root to Python path
 project_root = Path(__file__).parent
@@ -15,7 +20,7 @@ sys.path.append(str(project_root))
 # Now import our local modules
 from src.schema_manager import SchemaManager
 from src.database.schema_inspector import inspect_database
-from src.langchain_components.qa_chain import generate_dynamic_query, execute_dynamic_query
+from src.langchain_components.qa_chain import generate_dynamic_query, execute_dynamic_query, memory_manager
 
 # Load environment variables - only in local development
 if os.path.exists(".env"):
@@ -26,6 +31,11 @@ SHOW_SCHEMA_EDITOR = False  # Set to False to hide schema editor in sidebar
 
 # Initialize schema manager
 schema_manager = SchemaManager()
+
+def get_available_schema_configs():
+    """Get list of available schema configuration files."""
+    config_files = glob.glob("schema_configs/*_schema_config*.yaml")
+    return [os.path.basename(f) for f in config_files]
 
 def get_snowflake_credentials():
     """Get Snowflake credentials from environment or streamlit secrets."""
@@ -80,8 +90,16 @@ def check_snowflake_config():
         st.info("Please set these values in Streamlit secrets or environment variables.")
         st.stop()
 
-def load_or_create_schema():
+def load_or_create_schema(config_file=None):
     """Load existing schema config or create new one."""
+    if config_file:
+        try:
+            with open(os.path.join("schema_configs", config_file), 'r') as f:
+                return yaml.safe_load(f)
+        except Exception as e:
+            st.error(f"Error loading schema config: {str(e)}")
+            st.stop()
+    
     config = schema_manager.load_config("snowflake")
     
     if not config:
@@ -167,6 +185,31 @@ def schema_editor(config):
                     )
                     st.success(f"Updated description for {selected_field}!")
 
+def display_chat_history():
+    """Display chat history in a clean, collapsible format."""
+    history = memory_manager.get_chat_history()
+    if not history:
+        return
+
+    with st.expander("Recent Questions", expanded=False):
+        for i, interaction in enumerate(reversed(history)):  # Show most recent first
+            # Format timestamp
+            timestamp = datetime.fromisoformat(interaction['timestamp'])
+            time_str = timestamp.strftime("%I:%M %p")  # e.g., "2:30 PM"
+            
+            # Create columns for timestamp and question
+            cols = st.columns([1, 4])
+            with cols[0]:
+                st.text(time_str)
+            with cols[1]:
+                st.markdown(f"**Q:** {interaction['question']}")
+                st.caption("SQL Query:")
+                st.code(interaction['query'], language="sql")
+            
+            # Add a subtle divider between interactions
+            if i < len(history) - 1:
+                st.divider()
+
 def main():
     st.title("Talk with Your Data")
     
@@ -176,17 +219,16 @@ def main():
     # Check Snowflake configuration
     check_snowflake_config()
     
-    # Load or create schema configuration
-    config = load_or_create_schema()
+    # Schema config selection
+    available_configs = get_available_schema_configs()
+    selected_config = st.sidebar.selectbox(
+        "Select Schema Configuration",
+        available_configs,
+        help="Choose different schema configurations to experiment with AI responses"
+    )
     
-    # Schema editor in sidebar (only if enabled)
-    if SHOW_SCHEMA_EDITOR:
-        schema_editor(config)
-    
-    # Main query interface
-    st.header("Ask Questions About Your Data")
-    
-    with st.expander("Example Questions", expanded=False):
+    # Example questions in sidebar
+    with st.sidebar.expander("Example Questions", expanded=False):
         st.markdown("""
            **Simple Questions:**
             - How many customers do we have?
@@ -203,6 +245,19 @@ def main():
             - Show me customer order patterns across different regions
             - Calculate market share by supplier within each region
            """)
+    
+    # Load selected schema configuration
+    config = load_or_create_schema(selected_config)
+    
+    # Schema editor in sidebar (only if enabled)
+    if SHOW_SCHEMA_EDITOR:
+        schema_editor(config)
+    
+    # Main query interface
+    st.header("Ask Questions About Your Data")
+    
+    # Display chat history before the input
+    display_chat_history()
     
     # Query input using chat_input
     if question := st.chat_input("Ask a question about your data..."):

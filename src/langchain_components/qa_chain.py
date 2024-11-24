@@ -59,7 +59,7 @@ def get_snowflake_connection():
 class QueryMemoryManager:
     """Manages query history and interactions."""
     
-    def __init__(self, window_size=5):
+    def __init__(self, window_size=7):
         self.history = defaultdict(list)
         self.window_size = window_size
     
@@ -160,11 +160,35 @@ def sanitize_sql(query):
     
     return formatted.strip()
 
+def get_data_timeframe():
+    """Get the actual timeframe of data in the ORDERS table."""
+    conn = None
+    try:
+        conn = get_snowflake_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT 
+                MIN(O_ORDERDATE) as min_date,
+                MAX(O_ORDERDATE) as max_date
+            FROM ORDERS
+        """)
+        min_date, max_date = cursor.fetchone()
+        return min_date, max_date
+    except Exception as e:
+        logging.error(f"Error getting data timeframe: {str(e)}")
+        return None, None
+    finally:
+        if conn:
+            conn.close()
+
 def create_sql_generation_prompt(chat_history=None):
     """Create prompt template using configuration from YAML."""
     # Load configurations
     config = load_schema_config()
     prompt_config = load_prompt_config()
+    
+    # Get actual data timeframe
+    min_date, max_date = get_data_timeframe()
     
     # Add Snowflake-specific rules
     if 'query_rules' not in prompt_config:
@@ -174,7 +198,9 @@ def create_sql_generation_prompt(chat_history=None):
         "Use UPPERCASE for table and column names",
         "Table names in TPC-H are: CUSTOMER, ORDERS, LINEITEM, PART, PARTSUPP, SUPPLIER, NATION, REGION",
         "Always use the exact column names from the schema (e.g., C_CUSTKEY, O_ORDERKEY)",
-        "Use Snowflake date functions (e.g., DATE_TRUNC, DATE_PART) for date operations"
+        "Use Snowflake date functions (e.g., DATE_TRUNC, DATE_PART) for date operations",
+        f"Data timeframe: Orders from {min_date} to {max_date}",
+        "If a query returns empty results, try to determine why and adjust the query accordingly"
     ])
     
     # Format contexts
@@ -182,14 +208,18 @@ def create_sql_generation_prompt(chat_history=None):
     schema_context = format_schema_context(config)
     example_queries = format_example_queries(config)
     
-    # Format history context
+    # Format history context with emphasis on empty results
     history_context = ""
     if chat_history:
-        history_text = "\n".join([
-            f"Q: {h['question']}\nSQL: {h['query']}\nResult: {h['result']}"
-            for h in chat_history
-        ])
-        history_context = f"\nRecent Query History:\n{history_text}\n"
+        history_entries = []
+        for h in chat_history:
+            entry = f"Q: {h['question']}\nSQL: {h['query']}"
+            if "Empty DataFrame" in h['result']:
+                entry += "\nResult: EMPTY RESULT - Query needs adjustment"
+            else:
+                entry += f"\nResult: {h['result']}"
+            history_entries.append(entry)
+        history_context = f"\nRecent Query History:\n" + "\n\n".join(history_entries) + "\n"
     
     # Fill in the template
     prompt_text = prompt_config['template'].format(
@@ -203,6 +233,26 @@ def create_sql_generation_prompt(chat_history=None):
     )
     
     return ChatPromptTemplate.from_template(prompt_text)
+
+def refine_query_if_empty(question: str, original_query: str, thread_id: str = "default"):
+    """Generate a refined query if the original returns empty results."""
+    refinement_prompt = f"""
+    The following query returned no results:
+    {original_query}
+    
+    This query was generated for the question: "{question}"
+    
+    Please analyze why this might have returned no results and generate a modified query that:
+    1. Considers the actual timeframe of the data
+    2. Relaxes or adjusts any overly restrictive conditions
+    3. Maintains the original intent of the question
+    
+    Generate only the SQL query, no explanation needed.
+    """
+    
+    llm = get_openai_client()
+    response = llm.invoke([{"role": "user", "content": refinement_prompt}])
+    return sanitize_sql(response.content)
 
 memory_manager = QueryMemoryManager()
 
@@ -233,6 +283,16 @@ def execute_dynamic_query(query: str, question: str = None, thread_id: str = "de
         columns = [desc[0] for desc in cursor.description]
         data = cursor.fetchall()
         df = pd.DataFrame(data, columns=columns)
+        
+        # If results are empty, try to refine the query
+        if df.empty and question:
+            refined_query = refine_query_if_empty(question, query, thread_id)
+            if refined_query != query:  # Only if we got a different query
+                cursor.execute(refined_query)
+                columns = [desc[0] for desc in cursor.description]
+                data = cursor.fetchall()
+                df = pd.DataFrame(data, columns=columns)
+                query = refined_query  # Update query to the refined version
         
         if question:
             memory_manager.save_interaction(thread_id, question, query, df)
