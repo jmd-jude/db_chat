@@ -211,7 +211,7 @@ def display_chat_history():
                 st.divider()
 
 def main():
-    st.title("Talk with Your Data")
+    st.title("Talk to Your Data")
     
     # Check OpenAI API key with detailed feedback
     check_api_key()
@@ -254,7 +254,7 @@ def main():
         schema_editor(config)
     
     # Main query interface
-    st.header("Ask Questions About Your Data")
+    st.header("Ask Questions, Get Answers")
     
     # Display chat history before the input
     display_chat_history()
