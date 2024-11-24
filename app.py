@@ -224,7 +224,7 @@ def main():
     selected_config = st.sidebar.selectbox(
         "Select Schema Configuration",
         available_configs,
-        help="Choose different schema configurations to experiment with AI responses"
+        help="Choose a schema configuration"
     )
     
     # Example questions in sidebar
