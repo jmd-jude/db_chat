@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 import glob
 from datetime import datetime
+import uuid
 
 # Add the project root to Python path
 project_root = Path(__file__).parent
@@ -185,9 +186,19 @@ def schema_editor(config):
                     )
                     st.success(f"Updated description for {selected_field}!")
 
+def format_result(result):
+    """Format the result for display in chat history."""
+    if isinstance(result, pd.DataFrame):
+        return f"DataFrame with {len(result)} rows and {len(result.columns)} columns"
+    return str(result)
+
 def display_chat_history():
     """Display chat history in a clean, collapsible format."""
-    history = memory_manager.get_chat_history()
+    # Get user-specific session ID
+    if 'session_id' not in st.session_state:
+        st.session_state.session_id = str(uuid.uuid4())
+    
+    history = memory_manager.get_chat_history(st.session_state.session_id)
     if not history:
         return
 
@@ -197,20 +208,31 @@ def display_chat_history():
             timestamp = datetime.fromisoformat(interaction['timestamp'])
             time_str = timestamp.strftime("%I:%M %p")  # e.g., "2:30 PM"
             
-            # Create columns for timestamp and question
+            # Create columns for timestamp and content
             cols = st.columns([1, 4])
             with cols[0]:
                 st.text(time_str)
             with cols[1]:
+                # Display question
                 st.markdown(f"**Q:** {interaction['question']}")
-                st.caption("SQL Query:")
-                st.code(interaction['query'], language="sql")
+                
+                # Display SQL query with a toggle button
+                if st.button(f"🔍 Toggle SQL Query", key=f"sql_toggle_{i}"):
+                    st.code(interaction['query'], language="sql")
+                
+                # Display result
+                st.markdown("**Result:**")
+                st.markdown(format_result(interaction['result']))
             
             # Add a subtle divider between interactions
             if i < len(history) - 1:
                 st.divider()
 
 def main():
+    # Initialize session state for user ID if not exists
+    if 'session_id' not in st.session_state:
+        st.session_state.session_id = str(uuid.uuid4())
+    
     st.title("Talk to Your Data")
     
     # Check OpenAI API key with detailed feedback
@@ -262,16 +284,18 @@ def main():
     # Query input using chat_input
     if question := st.chat_input("Ask a question about your data..."):
         try:
-            with st.spinner("Generating query..."):
-                # Generate SQL query
-                sql_query = generate_dynamic_query(question)
+            with st.spinner("Working on it..."):
+                # Generate SQL query using user's session ID
+                sql_query = generate_dynamic_query(question, st.session_state.session_id)
                 
-                # Show the generated SQL
+                # Show the generated SQL with the question context
                 with st.expander("Generated SQL", expanded=True):
+                    st.markdown(f"**Question:** {question}")
+                    st.markdown("**Generated Query:**")
                     st.code(sql_query, language="sql")
                 
                 # Execute query and show results
-                results = execute_dynamic_query(sql_query, question)
+                results = execute_dynamic_query(sql_query, question, st.session_state.session_id)
                 
                 if isinstance(results, pd.DataFrame):
                     st.dataframe(results)
