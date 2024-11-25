@@ -13,6 +13,8 @@ from pathlib import Path
 import glob
 from datetime import datetime
 import uuid
+import re
+import numpy as np
 
 # Add the project root to Python path
 project_root = Path(__file__).parent
@@ -32,6 +34,45 @@ SHOW_SCHEMA_EDITOR = False  # Set to False to hide schema editor in sidebar
 
 # Initialize schema manager
 schema_manager = SchemaManager()
+
+def format_dataframe(df):
+    """Apply formatting to DataFrame based on column patterns."""
+    # Create a copy to avoid modifying the original
+    formatted_df = df.copy()
+    
+    for col in formatted_df.columns:
+        # Skip if column is empty
+        if formatted_df[col].empty:
+            continue
+        
+        # Get the first non-null value to check type
+        sample_val = formatted_df[col].dropna().iloc[0] if not formatted_df[col].dropna().empty else None
+        if sample_val is None:
+            continue
+        
+        col_lower = col.lower()
+        
+        # Date formatting (remove time component)
+        if isinstance(sample_val, (datetime, pd.Timestamp)) or 'date' in col_lower:
+            formatted_df[col] = pd.to_datetime(formatted_df[col]).dt.strftime('%Y-%m-%d')
+        
+        # Numeric formatting
+        elif isinstance(sample_val, (int, float, np.number)):
+            # Check if column contains years
+            if (formatted_df[col].between(1970, 2030).all() and 
+                formatted_df[col].astype(int).astype(float).eq(formatted_df[col]).all()):
+                # Year values - keep as is
+                formatted_df[col] = formatted_df[col].astype(int).astype(str)
+            
+            # Sales/Currency formatting
+            elif any(term in col_lower for term in ['sales', 'revenue', 'price', 'amount', 'cost', 'total']):
+                formatted_df[col] = formatted_df[col].round(0).astype(int).apply(lambda x: f"{x:,}")
+            
+            # Large number formatting
+            elif formatted_df[col].abs().max() >= 1000:
+                formatted_df[col] = formatted_df[col].round().astype(np.int64).apply(lambda x: f"{x:,}")
+    
+    return formatted_df
 
 def get_available_schema_configs():
     """Get list of available schema configuration files."""
@@ -298,7 +339,9 @@ def main():
                 results = execute_dynamic_query(sql_query, question, st.session_state.session_id)
                 
                 if isinstance(results, pd.DataFrame):
-                    st.dataframe(results)
+                    # Apply formatting before display
+                    formatted_results = format_dataframe(results)
+                    st.dataframe(formatted_results)
                 else:
                     st.error(f"Error executing query: {results}")
         
