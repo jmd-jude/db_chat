@@ -23,7 +23,7 @@ sys.path.append(str(project_root))
 # Now import our local modules
 from src.schema_manager import SchemaManager
 from src.database.schema_inspector import inspect_database
-from src.langchain_components.qa_chain import generate_dynamic_query, execute_dynamic_query, memory_manager
+from src.langchain_components.qa_chain import generate_dynamic_query, execute_dynamic_query, memory_manager, get_openai_client
 
 # Load environment variables - only in local development
 if os.path.exists(".env"):
@@ -234,40 +234,59 @@ def format_result(result):
     return str(result)
 
 def display_chat_history():
-    """Display chat history in a clean, collapsible format."""
+    """Display chat history in a clean format."""
     # Get user-specific session ID
     if 'session_id' not in st.session_state:
         st.session_state.session_id = str(uuid.uuid4())
     
     history = memory_manager.get_chat_history(st.session_state.session_id)
     if not history:
+        st.markdown("*No questions asked yet*")
         return
 
-    with st.expander("Recent Questions", expanded=False):
-        for i, interaction in enumerate(reversed(history)):  # Show most recent first
-            # Format timestamp
-            timestamp = datetime.fromisoformat(interaction['timestamp'])
-            time_str = timestamp.strftime("%I:%M %p")  # e.g., "2:30 PM"
+    for i, interaction in enumerate(reversed(history)):  # Show most recent first
+        # Format timestamp
+        timestamp = datetime.fromisoformat(interaction['timestamp'])
+        time_str = timestamp.strftime("%I:%M %p")  # e.g., "2:30 PM"
+        
+        # Create columns for timestamp and content
+        cols = st.columns([1, 4])
+        with cols[0]:
+            st.text(time_str)
+        with cols[1]:
+            # Display question
+            st.markdown(f"**Q:** {interaction['question']}")
             
-            # Create columns for timestamp and content
-            cols = st.columns([1, 4])
-            with cols[0]:
-                st.text(time_str)
-            with cols[1]:
-                # Display question
-                st.markdown(f"**Q:** {interaction['question']}")
-                
-                # Display SQL query with a toggle button
-                if st.button(f"🔍 Toggle SQL Query", key=f"sql_toggle_{i}"):
-                    st.code(interaction['query'], language="sql")
-                
-                # Display result
-                st.markdown("**Result:**")
-                st.markdown(format_result(interaction['result']))
+            # Display SQL query with a toggle button
+            if st.button(f"🔍 Toggle SQL Query", key=f"sql_toggle_{i}"):
+                st.code(interaction['query'], language="sql")
             
-            # Add a subtle divider between interactions
-            if i < len(history) - 1:
-                st.divider()
+            # Display result
+            st.markdown("**Result:**")
+            st.markdown(format_result(interaction['result']))
+        
+        # Add a subtle divider between interactions
+        if i < len(history) - 1:
+            st.divider()
+
+def generate_result_narrative(df, question):
+    """Generate a narrative analysis of the query results."""
+    prompt = f"""
+    Analyze this query result and provide a brief, business-focused summary.
+    Question: {question}
+    Data Summary: {df.describe().to_string()}
+    Row Count: {len(df)}
+    
+    Focus on:
+    1. Key insights
+    2. Notable patterns
+    3. Business implications
+    
+    Keep response under 3 sentences.
+    """
+    llm = get_openai_client()
+    response = llm.invoke([{"role": "user", "content": prompt}])
+    return response.content
 
 def main():
     # Initialize session state for user ID if not exists
@@ -282,32 +301,42 @@ def main():
     # Check Snowflake configuration
     check_snowflake_config()
     
-    # Schema config selection
-    available_configs = get_available_schema_configs()
-    selected_config = st.sidebar.selectbox(
-        "Select Schema Configuration",
-        available_configs,
-        help="Choose a schema configuration"
-    )
-    
-    # Example questions in sidebar
-    with st.sidebar.expander("Example Questions", expanded=False):
-        st.markdown("""
-           **Simple Questions:**
-            - How many customers do we have?
-            - What's the total value of all orders?
-            - Show me the distribution of orders by nation
+    # Sidebar Configuration
+    with st.sidebar:
+        # Schema config selection
+        available_configs = get_available_schema_configs()
+        selected_config = st.selectbox(
+            "Select Schema Configuration",
+            available_configs,
+            help="Choose a schema configuration"
+        )
+        
+        st.markdown("---")  # Visual separator
+        
+        # Example questions first
+        with st.expander("Example Questions", expanded=False):
+            st.markdown("""
+               **Simple Questions:**
+                - How many customers do we have?
+                - What's the total value of all orders?
+                - Show me the distribution of orders by nation
 
-            **Intermediate Questions:**
-            - What's the average order value by region?
-            - Who are our top 10 customers by order value?
-            - Show order trends over time by region
+                **Intermediate Questions:**
+                - What's the average order value by region?
+                - Who are our top 10 customers by order value?
+                - Show order trends over time by region
 
-            **Complex Questions:**
-            - What's the average delivery time by product category?
-            - Show me customer order patterns across different regions
-            - Calculate market share by supplier within each region
-           """)
+                **Complex Questions:**
+                - What's the average delivery time by product category?
+                - Show me customer order patterns across different regions
+                - Calculate market share by supplier within each region
+               """)
+        
+        st.markdown("---")  # Visual separator
+        
+        # Chat history moved below example questions and in expander
+        with st.expander("Recent Questions", expanded=False):
+            display_chat_history()
     
     # Load selected schema configuration
     config = load_or_create_schema(selected_config)
@@ -319,9 +348,6 @@ def main():
     # Main query interface
     st.header("Ask Questions, Get Answers")
     
-    # Display chat history before the input
-    display_chat_history()
-    
     # Query input using chat_input
     if question := st.chat_input("Ask a question about your data..."):
         try:
@@ -330,7 +356,7 @@ def main():
                 sql_query = generate_dynamic_query(question, st.session_state.session_id)
                 
                 # Show the generated SQL with the question context
-                with st.expander("Generated SQL", expanded=True):
+                with st.expander("Generated SQL", expanded=False):
                     st.markdown(f"**Question:** {question}")
                     st.markdown("**Generated Query:**")
                     st.code(sql_query, language="sql")
@@ -342,6 +368,13 @@ def main():
                     # Apply formatting before display
                     formatted_results = format_dataframe(results)
                     st.dataframe(formatted_results)
+                    
+                    # Add analyze button for non-empty results
+                    if not formatted_results.empty:
+                        if st.button("📊 Analyze This Result"):
+                            with st.spinner("Analyzing..."):
+                                narrative = generate_result_narrative(formatted_results, question)
+                                st.info(narrative)
                 else:
                     st.error(f"Error executing query: {results}")
         
