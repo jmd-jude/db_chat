@@ -258,7 +258,7 @@ def display_chat_history():
             st.markdown(f"**Q:** {interaction['question']}")
             
             # Display SQL query with a toggle button
-            if st.button(f"🔍 Toggle SQL Query", key=f"sql_toggle_{i}"):
+            if st.button(f"🔍 Toggle Cyl", key=f"sql_toggle_{i}"):
                 st.code(interaction['query'], language="sql")
             
             # Display result
@@ -306,9 +306,9 @@ def main():
         # Schema config selection
         available_configs = get_available_schema_configs()
         selected_config = st.selectbox(
-            "Select Schema Configuration",
+            "Select Schema",
             available_configs,
-            help="Choose a schema configuration"
+            help="Choose a schema"
         )
         
         st.markdown("---")  # Visual separator
@@ -356,9 +356,9 @@ def main():
                 sql_query = generate_dynamic_query(question, st.session_state.session_id)
                 
                 # Show the generated SQL with the question context
-                with st.expander("Generated SQL", expanded=False):
+                with st.expander("Cylyndyr", expanded=False):
                     st.markdown(f"**Question:** {question}")
-                    st.markdown("**Generated Query:**")
+                    st.markdown("**Cyl:**")
                     st.code(sql_query, language="sql")
                 
                 # Execute query and show results

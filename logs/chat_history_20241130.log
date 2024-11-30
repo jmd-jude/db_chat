@@ -1,0 +1,24 @@
+2024-11-30 08:37:51,447 - API Key found: True
+2024-11-30 08:37:51,447 - API Key length: 164
+2024-11-30 08:37:51,447 - API Key prefix: sk-proj...
+2024-11-30 08:37:51,491 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-15.1.1-arm64-arm-64bit-Mach-O
+2024-11-30 08:37:51,492 - Connecting to GLOBAL Snowflake domain
+2024-11-30 08:37:51,492 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-30 08:37:52,220 - Number of results in first chunk: 1
+2024-11-30 08:37:52,222 - closed
+2024-11-30 08:37:52,266 - No async queries seem to be running, deleting session
+2024-11-30 08:38:09,008 - Retrying request to /chat/completions in 0.454613 seconds
+2024-11-30 08:38:21,460 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-30 08:38:21,491 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-15.1.1-arm64-arm-64bit-Mach-O
+2024-11-30 08:38:21,491 - Connecting to GLOBAL Snowflake domain
+2024-11-30 08:38:21,492 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-30 08:38:21,915 - Number of results in first chunk: 8
+2024-11-30 08:38:21,933 - {
+  "timestamp": "2024-11-30T08:38:21.927300",
+  "thread_id": "85e10359-0974-409b-8542-23fcb03605a1",
+  "question": "What are the row counts?",
+  "query": "SELECT 'CUSTOMER' AS TABLE_NAME,\n       COUNT(*) AS ROW_COUNT\nFROM CUSTOMER\nUNION ALL\nSELECT 'ORDERS' AS TABLE_NAME,\n       COUNT(*) AS ROW_COUNT\nFROM ORDERS\nUNION ALL\nSELECT 'LINEITEM' AS TABLE_NAME,\n       COUNT(*) AS ROW_COUNT\nFROM LINEITEM\nUNION ALL\nSELECT 'PART' AS TABLE_NAME,\n       COUNT(*) AS ROW_COUNT\nFROM PART\nUNION ALL\nSELECT 'PARTSUPP' AS TABLE_NAME,\n       COUNT(*) AS ROW_COUNT\nFROM PARTSUPP\nUNION ALL\nSELECT 'SUPPLIER' AS TABLE_NAME,\n       COUNT(*) AS ROW_COUNT\nFROM SUPPLIER\nUNION ALL\nSELECT 'NATION' AS TABLE_NAME,\n       COUNT(*) AS ROW_COUNT\nFROM NATION\nUNION ALL\nSELECT 'REGION' AS TABLE_NAME,\n       COUNT(*) AS ROW_COUNT\nFROM REGION;",
+  "result": "  TABLE_NAME  ROW_COUNT\n0   CUSTOMER     150000\n1     ORDERS    1500000\n2   LINEITEM    6001215\n3       PART     200000\n4   PARTSUPP     800000\n5   SUPPLIER      10000\n6     NATION         25\n7     REGION          5"
+}
+2024-11-30 08:38:21,933 - closed
+2024-11-30 08:38:21,972 - No async queries seem to be running, deleting session
