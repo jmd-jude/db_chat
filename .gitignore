@@ -1,9 +1,51 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Virtual Environment
 .env
 .venv
 env/
 venv/
 ENV/
+
+# System files
+.DS_Store
+**/.DS_Store
+Thumbs.db
+.Spotlight-V100
+.Trashes
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Sensitive/Local files
+.streamlit/
+strategic_docs/
+test_queries.py
+info.md
+snowflake.md
+
+# Logs and databases
+logs/
+*.log
+*.sqlite
+*.db
+
+# Backup files
+*.bak
+*.backup
 *.zip
+*.gz
+*.tar
+*.tgz
+
+# Local development
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
