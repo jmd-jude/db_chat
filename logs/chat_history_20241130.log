@@ -22,3 +22,98 @@
 }
 2024-11-30 08:38:21,933 - closed
 2024-11-30 08:38:21,972 - No async queries seem to be running, deleting session
+2024-11-30 08:51:47,380 - API Key found: True
+2024-11-30 08:51:47,382 - API Key length: 164
+2024-11-30 08:51:47,382 - API Key prefix: sk-proj...
+2024-11-30 08:51:47,439 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-15.1.1-arm64-arm-64bit-Mach-O
+2024-11-30 08:51:47,440 - Connecting to GLOBAL Snowflake domain
+2024-11-30 08:51:47,440 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-30 08:51:47,993 - Number of results in first chunk: 1
+2024-11-30 08:51:47,996 - closed
+2024-11-30 08:51:48,037 - No async queries seem to be running, deleting session
+2024-11-30 08:51:49,462 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-30 08:51:49,484 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-15.1.1-arm64-arm-64bit-Mach-O
+2024-11-30 08:51:49,485 - Connecting to GLOBAL Snowflake domain
+2024-11-30 08:51:49,486 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-30 08:51:49,950 - {
+  "timestamp": "2024-11-30T08:51:49.950088",
+  "thread_id": "7987388c-b744-469b-993f-f3cd0d583160",
+  "question": "how many customer bought in each of the last 3 quarters?",
+  "query": "SELECT DATE_TRUNC('quarter', TO_DATE(O_ORDERDATE, 'YYYY-MM-DD')) AS QUARTER,\n       COUNT(DISTINCT C.C_CUSTKEY) AS CUSTOMER_COUNT\nFROM CUSTOMER C\nJOIN ORDERS O ON C.C_CUSTKEY = O.O_CUSTKEY\nWHERE O.O_ORDERDATE >= '1997-01-01'\n  AND O.O_ORDERDATE <= '1998-12-31'\nGROUP BY QUARTER\nORDER BY QUARTER DESC\nLIMIT 3;",
+  "result": "Error executing query: 000939 (22023): 01b8b7df-0102-35a4-0000-0006e3426979: SQL compilation error: error line 1 at position 29\ntoo many arguments for function [TO_DATE(O.O_ORDERDATE, 'YYYY-MM-DD')] expected 1, got 2"
+}
+2024-11-30 08:51:49,950 - closed
+2024-11-30 08:51:49,992 - No async queries seem to be running, deleting session
+2024-11-30 08:52:19,698 - API Key found: True
+2024-11-30 08:52:19,699 - API Key length: 164
+2024-11-30 08:52:19,700 - API Key prefix: sk-proj...
+2024-11-30 08:52:19,742 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-15.1.1-arm64-arm-64bit-Mach-O
+2024-11-30 08:52:19,743 - Connecting to GLOBAL Snowflake domain
+2024-11-30 08:52:19,743 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-30 08:52:20,137 - Number of results in first chunk: 1
+2024-11-30 08:52:20,137 - closed
+2024-11-30 08:52:20,179 - No async queries seem to be running, deleting session
+2024-11-30 08:52:21,323 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-30 08:52:21,330 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-15.1.1-arm64-arm-64bit-Mach-O
+2024-11-30 08:52:21,330 - Connecting to GLOBAL Snowflake domain
+2024-11-30 08:52:21,331 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-30 08:52:22,618 - Number of results in first chunk: 3
+2024-11-30 08:52:22,631 - {
+  "timestamp": "2024-11-30T08:52:22.622993",
+  "thread_id": "7987388c-b744-469b-993f-f3cd0d583160",
+  "question": "Try again, and fix this error?\nError executing query: Error executing query: 000939 (22023): 01b8b7df-0102-35a4-0000-0006e3426979: SQL compilation error: error line 1 at position 29 too many arguments for function [TO_DATE(O.O_ORDERDATE, 'YYYY-MM-DD')] expected 1, got 2",
+  "query": "SELECT DATE_TRUNC('quarter', O.O_ORDERDATE) AS QUARTER,\n       COUNT(DISTINCT C.C_CUSTKEY) AS CUSTOMER_COUNT\nFROM CUSTOMER C\nJOIN ORDERS O ON C.C_CUSTKEY = O.O_CUSTKEY\nWHERE O.O_ORDERDATE >= '1997-01-01'\n  AND O.O_ORDERDATE <= '1998-12-31'\nGROUP BY QUARTER\nORDER BY QUARTER DESC\nLIMIT 3;",
+  "result": "      QUARTER  CUSTOMER_COUNT\n0  1998-07-01           18394\n1  1998-04-01           42272\n2  1998-01-01           42082"
+}
+2024-11-30 08:52:22,631 - closed
+2024-11-30 08:52:22,675 - No async queries seem to be running, deleting session
+2024-11-30 09:35:55,263 - API Key found: True
+2024-11-30 09:35:55,263 - API Key length: 164
+2024-11-30 09:35:55,263 - API Key prefix: sk-proj...
+2024-11-30 09:35:55,307 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-15.1.1-arm64-arm-64bit-Mach-O
+2024-11-30 09:35:55,307 - Connecting to GLOBAL Snowflake domain
+2024-11-30 09:35:55,308 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-30 09:35:55,863 - Number of results in first chunk: 1
+2024-11-30 09:35:55,864 - closed
+2024-11-30 09:35:55,912 - No async queries seem to be running, deleting session
+2024-11-30 09:35:57,331 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-30 09:35:57,353 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-15.1.1-arm64-arm-64bit-Mach-O
+2024-11-30 09:35:57,354 - Connecting to GLOBAL Snowflake domain
+2024-11-30 09:35:57,354 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-30 09:35:58,787 - Number of results in first chunk: 4
+2024-11-30 09:35:58,793 - {
+  "timestamp": "2024-11-30T09:35:58.788946",
+  "thread_id": "1ae34345-afe4-45d9-8ab5-fb0ebe59971b",
+  "question": "what's our revenue for the last 3 days?",
+  "query": "SELECT SUM(LINEITEM.L_EXTENDEDPRICE * (1 - LINEITEM.L_DISCOUNT)) AS REVENUE\nFROM LINEITEM\nJOIN ORDERS ON LINEITEM.L_ORDERKEY = ORDERS.O_ORDERKEY\nWHERE ORDERS.O_ORDERDATE >= '1998-07-30'\nGROUP BY DATE(ORDERS.O_ORDERDATE)",
+  "result": "         REVENUE\n0  84551784.4501\n1  89152791.8424\n2  89812372.6202\n3  90154272.9887"
+}
+2024-11-30 09:35:58,793 - closed
+2024-11-30 09:35:58,834 - No async queries seem to be running, deleting session
+2024-11-30 09:36:06,699 - API Key found: True
+2024-11-30 09:36:06,699 - API Key length: 164
+2024-11-30 09:36:06,699 - API Key prefix: sk-proj...
+2024-11-30 09:36:07,734 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-30 09:36:51,107 - API Key found: True
+2024-11-30 09:36:51,107 - API Key length: 164
+2024-11-30 09:36:51,108 - API Key prefix: sk-proj...
+2024-11-30 09:36:51,145 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-15.1.1-arm64-arm-64bit-Mach-O
+2024-11-30 09:36:51,146 - Connecting to GLOBAL Snowflake domain
+2024-11-30 09:36:51,146 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-30 09:36:51,859 - Number of results in first chunk: 1
+2024-11-30 09:36:51,859 - closed
+2024-11-30 09:36:51,910 - No async queries seem to be running, deleting session
+2024-11-30 09:36:53,172 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-30 09:36:53,178 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-15.1.1-arm64-arm-64bit-Mach-O
+2024-11-30 09:36:53,179 - Connecting to GLOBAL Snowflake domain
+2024-11-30 09:36:53,179 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-30 09:36:54,495 - Number of results in first chunk: 1
+2024-11-30 09:36:54,499 - {
+  "timestamp": "2024-11-30T09:36:54.496633",
+  "thread_id": "1ae34345-afe4-45d9-8ab5-fb0ebe59971b",
+  "question": "Who made the largest purchase?",
+  "query": "SELECT CUSTOMER.C_NAME AS CUSTOMER_NAME,\n       SUM(LINEITEM.L_EXTENDEDPRICE * (1 - LINEITEM.L_DISCOUNT)) AS TOTAL_PURCHASE\nFROM CUSTOMER\nJOIN ORDERS ON CUSTOMER.C_CUSTKEY = ORDERS.O_CUSTKEY\nJOIN LINEITEM ON ORDERS.O_ORDERKEY = LINEITEM.L_ORDERKEY\nWHERE ORDERS.O_ORDERDATE BETWEEN '1992-01-01' AND '1998-08-02'\nGROUP BY CUSTOMER.C_NAME\nORDER BY TOTAL_PURCHASE DESC\nLIMIT 1;",
+  "result": "        CUSTOMER_NAME TOTAL_PURCHASE\n0  Customer#000143500   6757566.0218"
+}
+2024-11-30 09:36:54,499 - closed
+2024-11-30 09:36:54,539 - No async queries seem to be running, deleting session

@@ -293,6 +293,12 @@ def main():
     if 'session_id' not in st.session_state:
         st.session_state.session_id = str(uuid.uuid4())
     
+    # Initialize session state for current results and question
+    if 'current_results' not in st.session_state:
+        st.session_state.current_results = None
+    if 'current_question' not in st.session_state:
+        st.session_state.current_question = None
+    
     st.title("Talk to Your Data")
     
     # Check OpenAI API key with detailed feedback
@@ -365,13 +371,17 @@ def main():
                 results = execute_dynamic_query(sql_query, question, st.session_state.session_id)
                 
                 if isinstance(results, pd.DataFrame):
+                    # Store current results and question in session state
+                    st.session_state.current_results = results
+                    st.session_state.current_question = question
+                    
                     # Apply formatting before display
                     formatted_results = format_dataframe(results)
                     st.dataframe(formatted_results)
                     
                     # Add analyze button for non-empty results
                     if not formatted_results.empty:
-                        if st.button("📊 Analyze This Result"):
+                        if st.button("📊 Analyze This Result", key="analyze_button"):
                             with st.spinner("Analyzing..."):
                                 narrative = generate_result_narrative(formatted_results, question)
                                 st.info(narrative)
@@ -381,6 +391,15 @@ def main():
         except Exception as e:
             st.error("An error occurred while processing your question.")
             st.error(f"Error details: {str(e)}")
+    
+    # Handle analysis of previous results when button is clicked
+    elif st.session_state.current_results is not None and st.button("📊 Analyze This Result", key="analyze_button"):
+        with st.spinner("Analyzing..."):
+            narrative = generate_result_narrative(
+                st.session_state.current_results,
+                st.session_state.current_question
+            )
+            st.info(narrative)
 
 if __name__ == "__main__":
     main()
