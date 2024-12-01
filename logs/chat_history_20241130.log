@@ -403,3 +403,30 @@
 2024-11-30 21:37:40,262 - API Key length: 164
 2024-11-30 21:37:40,263 - API Key prefix: sk-proj...
 2024-11-30 21:37:41,124 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-30 21:43:54,396 - API Key found: True
+2024-11-30 21:43:54,398 - API Key length: 164
+2024-11-30 21:43:54,398 - API Key prefix: sk-proj...
+2024-11-30 21:43:54,423 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-15.1.1-arm64-arm-64bit-Mach-O
+2024-11-30 21:43:54,423 - Connecting to GLOBAL Snowflake domain
+2024-11-30 21:43:54,423 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-30 21:43:55,233 - Number of results in first chunk: 1
+2024-11-30 21:43:55,235 - closed
+2024-11-30 21:43:55,288 - No async queries seem to be running, deleting session
+2024-11-30 21:43:56,400 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-30 21:43:56,423 - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.13.0, Platform: macOS-15.1.1-arm64-arm-64bit-Mach-O
+2024-11-30 21:43:56,424 - Connecting to GLOBAL Snowflake domain
+2024-11-30 21:43:56,424 - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-11-30 21:43:57,981 - Number of results in first chunk: 10
+2024-11-30 21:43:57,992 - {
+  "timestamp": "2024-11-30T21:43:57.987544",
+  "thread_id": "51c1ecd9-f16d-4dd9-8dfb-ba28ac09c661",
+  "question": "How many customer bought each of the last 10 days?",
+  "query": "SELECT DATE_TRUNC('day', DATE(L_SHIPDATE)) AS SHIP_DATE,\n       COUNT(DISTINCT C.C_CUSTKEY) AS CUSTOMER_COUNT\nFROM LINEITEM LI\nJOIN ORDERS O ON LI.L_ORDERKEY = O.O_ORDERKEY\nJOIN CUSTOMER C ON O.O_CUSTKEY = C.C_CUSTKEY\nWHERE L_SHIPDATE >= '1998-07-24'\n  AND L_SHIPDATE <= '1998-08-02'\nGROUP BY SHIP_DATE\nORDER BY SHIP_DATE DESC;",
+  "result": "SHIP_DATE   CUSTOMER_COUNT\n1998-08-02 2365           \n1998-08-01 2452           \n1998-07-31 2394           \n1998-07-30 2463           \n1998-07-29 2393           \n1998-07-28 2433           \n1998-07-27 2517           \n1998-07-26 2421           \n1998-07-25 2403           \n1998-07-24 2425           "
+}
+2024-11-30 21:43:57,993 - closed
+2024-11-30 21:43:58,044 - No async queries seem to be running, deleting session
+2024-11-30 21:44:01,575 - API Key found: True
+2024-11-30 21:44:01,575 - API Key length: 164
+2024-11-30 21:44:01,575 - API Key prefix: sk-proj...
+2024-11-30 21:44:02,638 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"

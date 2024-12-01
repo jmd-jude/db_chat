@@ -66,13 +66,29 @@ class QueryMemoryManager:
     def get_chat_history(self, thread_id: str = "default"):
         return self.history[thread_id][-self.window_size:] if self.history[thread_id] else []
     
+    def format_result(self, result):
+        """Format result for storage, with special handling for DataFrames."""
+        if isinstance(result, pd.DataFrame):
+            if result.empty:
+                return "Empty DataFrame"
+            # Format DataFrame with clean spacing and alignment
+            return result.to_string(
+                index=False,
+                max_rows=10,  # Limit rows for readability
+                max_cols=None,
+                line_width=80,
+                justify='left'
+            )
+        return str(result)
+    
     def save_interaction(self, thread_id: str, question: str, query: str, result):
+        """Save interaction with improved result formatting."""
         interaction = {
             'timestamp': datetime.now().isoformat(),
             'thread_id': thread_id,
             'question': question,
             'query': query,
-            'result': str(result)
+            'result': self.format_result(result)
         }
         self.history[thread_id].append(interaction)
         logging.info(json.dumps(interaction, indent=2))

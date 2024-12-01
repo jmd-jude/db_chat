@@ -207,7 +207,8 @@ def format_result(result):
     """Format the result for display in chat history."""
     if isinstance(result, pd.DataFrame):
         return f"DataFrame with {len(result)} rows and {len(result.columns)} columns"
-    return str(result)
+    # For pre-formatted strings (from QueryMemoryManager), display as is
+    return result
 
 def display_chat_history():
     """Display chat history in a clean format."""
@@ -239,7 +240,8 @@ def display_chat_history():
             
             # Display result
             st.markdown("**Result:**")
-            st.markdown(format_result(interaction['result']))
+            # Use st.code for pre-formatted results to preserve spacing
+            st.code(interaction['result'])
         
         # Add a subtle divider between interactions
         if i < len(history) - 1:
