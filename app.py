@@ -74,11 +74,6 @@ def format_dataframe(df):
     
     return formatted_df
 
-def get_available_schema_configs():
-    """Get list of available schema configuration files."""
-    config_files = glob.glob("schema_configs/*_schema_config*.yaml")
-    return [os.path.basename(f) for f in config_files]
-
 def get_snowflake_credentials():
     """Get Snowflake credentials from environment or streamlit secrets."""
     try:
@@ -132,35 +127,16 @@ def check_snowflake_config():
         st.info("Please set these values in Streamlit secrets or environment variables.")
         st.stop()
 
-def load_or_create_schema(config_file=None):
+def load_or_create_schema(has_key):
     """Load existing schema config or create new one."""
-    if config_file:
+    if has_key == "Yes":
         try:
-            with open(os.path.join("schema_configs", config_file), 'r') as f:
+            with open(os.path.join("schema_configs", "snowflake_schema_config_v2.yaml"), 'r') as f:
                 return yaml.safe_load(f)
         except Exception as e:
             st.error(f"Error loading schema config: {str(e)}")
             st.stop()
-    
-    config = schema_manager.load_config("snowflake")
-    
-    if not config:
-        st.info("Generating schema configuration...")
-        try:
-            creds = get_snowflake_credentials()
-            config = inspect_database(
-                db_type="snowflake",
-                **creds
-            )
-            schema_manager.save_config("snowflake", config)
-            st.success("Schema configuration generated successfully!")
-        except Exception as e:
-            st.error("Error connecting to Snowflake. Please check your credentials and network settings.")
-            st.error("If you're using Streamlit Cloud, ensure all secrets are properly configured.")
-            st.error(f"Error details: {str(e)}")
-            st.stop()
-    
-    return config
+    return None
 
 def schema_editor(config):
     """Simple schema configuration editor."""
@@ -309,12 +285,11 @@ def main():
     
     # Sidebar Configuration
     with st.sidebar:
-        # Schema config selection
-        available_configs = get_available_schema_configs()
-        selected_config = st.selectbox(
-            "Select Schema",
-            available_configs,
-            help="Choose a schema"
+        # Replace schema config selection with Cylyndyr Key radio
+        has_key = st.radio(
+            "Cylyndyr Key",
+            ["No", "Yes"],
+            help="Experience the difference with Cylyndyr"
         )
         
         st.markdown("---")  # Visual separator
@@ -344,11 +319,11 @@ def main():
         with st.expander("Recent Questions", expanded=False):
             display_chat_history()
     
-    # Load selected schema configuration
-    config = load_or_create_schema(selected_config)
+    # Load selected schema configuration based on Cylyndyr Key
+    config = load_or_create_schema(has_key)
     
     # Schema editor in sidebar (only if enabled)
-    if SHOW_SCHEMA_EDITOR:
+    if SHOW_SCHEMA_EDITOR and config:
         schema_editor(config)
     
     # Main query interface
@@ -359,7 +334,7 @@ def main():
         try:
             with st.spinner("Working on it..."):
                 # Generate SQL query using user's session ID
-                sql_query = generate_dynamic_query(question, st.session_state.session_id)
+                sql_query = generate_dynamic_query(question, st.session_state.session_id, config)
                 
                 # Show the generated SQL with the question context
                 with st.expander("Cylyndyr", expanded=False):

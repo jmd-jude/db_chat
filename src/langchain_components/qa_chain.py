@@ -77,16 +77,6 @@ class QueryMemoryManager:
         self.history[thread_id].append(interaction)
         logging.info(json.dumps(interaction, indent=2))
 
-def load_schema_config():
-    """Load Snowflake schema configuration from file."""
-    try:
-        config_path = os.path.join('schema_configs', 'snowflake_schema_config.yaml')
-        with open(config_path, 'r') as file:
-            return yaml.safe_load(file)
-    except Exception as e:
-        logging.error(f"Error loading schema config: {str(e)}")
-        raise
-
 def load_prompt_config():
     """Load prompt configuration from YAML."""
     try:
@@ -99,6 +89,9 @@ def load_prompt_config():
 
 def format_schema_context(config):
     """Convert schema config into prompt-friendly format."""
+    if not config:
+        return ""
+        
     context = [f"Business Context: {config['business_context']['description']}"]
     
     concepts = "\n".join(f"- {c}" for c in config['business_context']['key_concepts'])
@@ -124,7 +117,7 @@ def format_schema_context(config):
                 rels.append(f"- {rel['type']} relationship with {rel['table']} on {rel['join_fields']}")
             context.append("Relationships:\n" + "\n".join(rels))
     
-    if 'query_guidelines' in config:
+    if config.get('query_guidelines'):
         tips = "\n".join(f"- {tip}" for tip in config['query_guidelines']['tips'])
         context.append(f"\nQuery Guidelines:\n{tips}")
     
@@ -132,6 +125,9 @@ def format_schema_context(config):
 
 def format_example_queries(config):
     """Format example queries from the configuration."""
+    if not config:
+        return ""
+        
     db_config = config.get('database_config', {})
     if not db_config or 'example_queries' not in db_config:
         return ""
@@ -181,16 +177,23 @@ def get_data_timeframe():
         if conn:
             conn.close()
 
-def create_sql_generation_prompt(chat_history=None):
+def create_sql_generation_prompt(chat_history=None, config=None):
     """Create prompt template using configuration from YAML."""
-    # Load configurations
-    config = load_schema_config()
-    prompt_config = load_prompt_config()
+    if not config:
+        # Basic template without any schema context or helpful rules
+        prompt_text = """
+        Generate a SQL query to answer this question. The database contains tables about customers, orders, and products.
+        
+        Question: {question}
+        
+        Return only the SQL query without any explanation.
+        """
+        return ChatPromptTemplate.from_template(prompt_text)
     
-    # Get actual data timeframe
+    # Full featured template with all context and rules
+    prompt_config = load_prompt_config()
     min_date, max_date = get_data_timeframe()
     
-    # Add Snowflake-specific rules
     if 'query_rules' not in prompt_config:
         prompt_config['query_rules'] = []
     
@@ -221,7 +224,7 @@ def create_sql_generation_prompt(chat_history=None):
             history_entries.append(entry)
         history_context = f"\nRecent Query History:\n" + "\n\n".join(history_entries) + "\n"
     
-    # Fill in the template
+    # Full template with schema context
     prompt_text = prompt_config['template'].format(
         base_role=prompt_config['base_role'].format(database_type="Snowflake"),
         main_instruction=prompt_config['main_instruction'],
@@ -256,12 +259,12 @@ def refine_query_if_empty(question: str, original_query: str, thread_id: str = "
 
 memory_manager = QueryMemoryManager()
 
-def generate_dynamic_query(question: str, thread_id: str = "default"):
+def generate_dynamic_query(question: str, thread_id: str = "default", config=None):
     """Generate SQL query from natural language question."""
     try:
         llm = get_openai_client()
         chat_history = memory_manager.get_chat_history(thread_id)
-        prompt = create_sql_generation_prompt(chat_history)
+        prompt = create_sql_generation_prompt(chat_history, config)
         
         messages = prompt.format_messages(question=question)
         response = llm.invoke(messages)
