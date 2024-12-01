@@ -290,7 +290,7 @@ def main():
         # Replace schema config selection with Cylyndyr Key radio
         has_key = st.radio(
             "Cylyndyr Key",
-            ["No", "Yes"],
+            ["Yes", "No"],
             help="Experience the difference with Cylyndyr"
         )
         
