@@ -30,7 +30,7 @@ if os.path.exists(".env"):
     load_dotenv(override=True)
 
 # Feature flags
-SHOW_SCHEMA_EDITOR = False  # Set to False to hide schema editor in sidebar
+SHOW_SCHEMA_EDITOR = True  # Re-enabled since we fixed the root cause
 
 # Initialize schema manager
 schema_manager = SchemaManager()
@@ -127,12 +127,11 @@ def check_snowflake_config():
         st.info("Please set these values in Streamlit secrets or environment variables.")
         st.stop()
 
-def load_or_create_schema(has_key):
-    """Load existing schema config or create new one."""
+def load_schema_config(has_key):
+    """Load schema config if Cylyndyr Key is enabled."""
     if has_key == "Yes":
         try:
-            with open(os.path.join("schema_configs", "snowflake_schema_config_v2.yaml"), 'r') as f:
-                return yaml.safe_load(f)
+            return schema_manager.load_config("snowflake")
         except Exception as e:
             st.error(f"Error loading schema config: {str(e)}")
             st.stop()
@@ -140,7 +139,7 @@ def load_or_create_schema(has_key):
 
 def schema_editor(config):
     """Simple schema configuration editor."""
-    with st.sidebar.expander("Edit Schema Configuration"):
+    with st.sidebar.expander("Configuration Manager"):
         # Business Context
         st.subheader("Business Context")
         description = st.text_area(
@@ -287,7 +286,6 @@ def main():
     
     # Sidebar Configuration
     with st.sidebar:
-        # Replace schema config selection with Cylyndyr Key radio
         has_key = st.radio(
             "Cylyndyr Key",
             ["Yes", "No"],
@@ -296,8 +294,8 @@ def main():
         
         st.markdown("---")  # Visual separator
         
-        # Example questions first
-        with st.expander("Example Questions", expanded=False):
+        # INFO SECTION
+        with st.expander("Guide", expanded=False):
             st.markdown("""
                **Simple Questions:**
                 - How many customers do we have?
@@ -313,6 +311,16 @@ def main():
                 - What's the average delivery time by product category?
                 - Show me customer order patterns across different regions
                 - Calculate market share by supplier within each region
+                        
+                **Database**
+                - CUSTOMERS
+                - LINEITEM
+                - NATION
+                - ORDERS
+                - PART
+                - PARTSUPP
+                - REGION
+                - SUPPLIER
                """)
         
         st.markdown("---")  # Visual separator
@@ -321,8 +329,8 @@ def main():
         with st.expander("Recent Questions", expanded=False):
             display_chat_history()
     
-    # Load selected schema configuration based on Cylyndyr Key
-    config = load_or_create_schema(has_key)
+    # Load schema configuration based on Cylyndyr Key
+    config = load_schema_config(has_key)
     
     # Schema editor in sidebar (only if enabled)
     if SHOW_SCHEMA_EDITOR and config:
