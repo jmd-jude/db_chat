@@ -30,7 +30,7 @@ if os.path.exists(".env"):
     load_dotenv(override=True)
 
 # Feature flags
-SHOW_SCHEMA_EDITOR = True  # Re-enabled since we fixed the root cause
+SHOW_SCHEMA_EDITOR = True  # Set to False to hide
 
 # Initialize schema manager
 schema_manager = SchemaManager()
@@ -259,7 +259,7 @@ def generate_result_narrative(df, question):
     2. Notable patterns
     3. Business implications
     
-    Keep response under 3 sentences.
+    Keep response under 3 sentences. Ask a probing follow up question to the user.
     """
     llm = get_openai_client()
     response = llm.invoke([{"role": "user", "content": prompt}])
@@ -295,16 +295,14 @@ def main():
         st.markdown("---")  # Visual separator
         
         # INFO SECTION
-        with st.expander("Guide", expanded=False):
+        with st.expander("Notes", expanded=False):
             st.markdown("""
                **Simple Questions:**
                 - How many customers do we have?
                 - What's the total value of all orders?
-                - Show me the distribution of orders by nation
 
                 **Intermediate Questions:**
                 - What's the average order value by region?
-                - Who are our top 10 customers by order value?
                 - Show order trends over time by region
 
                 **Complex Questions:**
