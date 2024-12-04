@@ -89,7 +89,9 @@ def get_snowflake_credentials():
             'password': st.secrets.snowflake.password,
             'database': st.secrets.snowflake.database,
             'warehouse': st.secrets.snowflake.warehouse,
-            'schema': st.secrets.snowflake.schema
+            'schema': st.secrets.snowflake.schema,
+            'ocsp_response_cache_filename': None,  # Disable OCSP response caching
+            'insecure_mode': True  # Skip certificate verification
         }
     except Exception:
         # Fall back to environment variables (for local development)
@@ -103,7 +105,9 @@ def get_snowflake_credentials():
             'password': os.getenv('SNOWFLAKE_PASSWORD'),
             'database': os.getenv('SNOWFLAKE_DATABASE'),
             'warehouse': os.getenv('SNOWFLAKE_WAREHOUSE'),
-            'schema': os.getenv('SNOWFLAKE_SCHEMA')
+            'schema': os.getenv('SNOWFLAKE_SCHEMA'),
+            'ocsp_response_cache_filename': None,  # Disable OCSP response caching
+            'insecure_mode': True  # Skip certificate verification
         }
 
 def check_api_key():
@@ -120,7 +124,7 @@ def check_api_key():
 def check_snowflake_config():
     """Check Snowflake configuration."""
     creds = get_snowflake_credentials()
-    missing_vars = [key for key, value in creds.items() if not value]
+    missing_vars = [key for key, value in creds.items() if not value and key not in ['ocsp_response_cache_filename', 'insecure_mode']]
     
     if missing_vars:
         st.error(f"Missing Snowflake configuration: {', '.join(missing_vars)}")
